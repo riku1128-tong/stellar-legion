@@ -75,6 +75,11 @@ SL.Audio = (function () {
     select: (v) => tone('square', 660, 660, 0.06, 0.12 * v),
     start: (v) => { tone('square', 440, 440, 0.08, 0.12 * v); tone('square', 660, 660, 0.08, 0.12 * v, 0.09); tone('square', 880, 880, 0.16, 0.12 * v, 0.18); },
     tick: (v) => tone('square', 1200, 1200, 0.04, 0.08 * v),
+    charge: (v) => tone('sawtooth', 200, 1600, 1.3, 0.06 * v),
+    mega: (v) => { tone('sawtooth', 900, 120, 0.6, 0.22 * v); noise(0.6, 0.25 * v, 4000, 300); },
+    zap: (v) => { tone('square', 1800, 600, 0.15, 0.10 * v); noise(0.15, 0.12 * v, 6000, 2000); },
+    transform: (v) => { tone('square', 400, 900, 0.12, 0.10 * v); tone('square', 900, 1300, 0.08, 0.08 * v, 0.1); },
+    dock: (v) => { tone('sine', 520, 520, 0.1, 0.15 * v); tone('sine', 780, 780, 0.15, 0.15 * v, 0.1); },
     win: (v) => { [523, 659, 784, 1046].forEach((f, i) => tone('square', f, f, 0.18, 0.12 * v, i * 0.12)); },
   };
 

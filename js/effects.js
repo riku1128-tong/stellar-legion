@@ -7,10 +7,44 @@
     constructor() {
       this.list = [];
       this.time = 0;
+      this.rec = null; // インターネット対戦の部屋を作った側は、相手に送るためにエフェクトを記録する
+    }
+
+    record(name, args) {
+      if (this.rec) this.rec.push([name].concat(args));
+    }
+
+    // 相手から届いたエフェクトを再生する
+    replay(ev) {
+      const fn = this[ev[0]];
+      if (typeof fn !== 'function') return;
+      const keep = this.rec;
+      this.rec = null;
+      fn.apply(this, ev.slice(1));
+      this.rec = keep;
     }
 
     add(p) {
       if (this.list.length < 1200) this.list.push(p);
+    }
+
+    // しびれるムチ（ジグザグの電撃）
+    whip(sx, sy, ex, ey, color) {
+      this.record('whip', [sx, sy, ex, ey, color]);
+      this.add({ t: 'whip', x: sx, y: sy, ex, ey, life: 0.25, max: 0.25, color });
+    }
+
+    // 変形などの光
+    burst(x, y, color) {
+      this.record('burst', [x, y, color]);
+      this.add({ t: 'ring', x, y, r0: 4, r1: 18, life: 0.25, max: 0.25, color });
+      this.spark(x, y, color, 6, 70);
+    }
+
+    // 戦艦の中で修理中の緑の光（記録しない）
+    repair(x, y) {
+      const life = U.rand(0.4, 0.7);
+      this.add({ t: 'px', x: x + U.rand(-8, 8), y: y + U.rand(-4, 6), vx: 0, vy: -25, life, max: life, color: '#4be06a', size: 1 });
     }
 
     spark(x, y, color, n = 4, spd = 90) {
@@ -22,11 +56,16 @@
     }
 
     hit(x, y, color) {
+      this.record('hit', [x, y, color]);
+      const keep = this.rec;
+      this.rec = null;
       this.add({ t: 'flash', x, y, r: 4, life: 0.07, max: 0.07, color: '#ffffff' });
       this.spark(x, y, color || '#ffe08a', 4, 110);
+      this.rec = keep;
     }
 
     muzzle(x, y, color) {
+      this.record('muzzle', [x, y, color]);
       this.add({ t: 'flash', x, y, r: 2.5, life: 0.06, max: 0.06, color });
     }
 
@@ -36,6 +75,14 @@
     }
 
     explosion(x, y, size) {
+      this.record('explosion', [x, y, size]);
+      const keep = this.rec;
+      this.rec = null;
+      this.explosionLocal(x, y, size);
+      this.rec = keep;
+    }
+
+    explosionLocal(x, y, size) {
       const n = Math.min(4, 1 + Math.floor(size / 10));
       for (let i = 0; i < n; i++) {
         const life = U.rand(0.35, 0.6);
@@ -54,10 +101,12 @@
 
     // 撃墜された機体の黄色いシルエットが広がって消える
     ghost(spriteId, x, y, facing) {
+      this.record('ghost', [spriteId, x, y, facing]);
       this.add({ t: 'ghost', id: spriteId, x, y, facing, life: 0.5, max: 0.5 });
     }
 
     slash(x, y, angle, color, radius) {
+      this.record('slash', [x, y, angle, color, radius]);
       this.add({ t: 'slash', x, y, a: angle, r: radius, life: 0.16, max: 0.16, color });
     }
 
@@ -127,6 +176,26 @@
             ctx.globalAlpha = k;
             SL.Sprites.draw(ctx, p.id, p.x, p.y, p.facing, 'gold', 1 + (1 - k) * 0.5);
             break;
+          case 'whip': {
+            ctx.globalAlpha = Math.min(1, k * 2);
+            const dx = p.ex - p.x, dy = p.ey - p.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const nx = -dy / len, ny = dx / len;
+            const seg = 8;
+            for (const [col, w, amp] of [[p.color, 2, 3], ['#ffffff', 1, 1.5]]) {
+              ctx.strokeStyle = col;
+              ctx.lineWidth = w;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              for (let i = 1; i <= seg; i++) {
+                const t = i / seg;
+                const o = i === seg ? 0 : U.rand(-amp, amp);
+                ctx.lineTo(p.x + dx * t + nx * o, p.y + dy * t + ny * o);
+              }
+              ctx.stroke();
+            }
+            break;
+          }
           case 'slash':
             ctx.globalAlpha = Math.min(1, k * 2);
             ctx.strokeStyle = p.color;

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>STELLAR LEGION</title>
+<link rel="icon" href="data:,">
 <style>
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
   body { display: flex; align-items: center; justify-content: center; }
@@ -18,6 +19,8 @@
 </head>
 <body>
 <canvas id="screen" width="640" height="360" tabindex="0"></canvas>
+<!-- インターネット対戦用（読み込めなくても、ほかのモードは遊べる） -->
+<script async src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/font.js"></script>
 <script src="js/input.js"></script>
@@ -29,6 +32,7 @@
 <script src="js/entities.js"></script>
 <script src="js/ai.js"></script>
 <script src="js/hud.js"></script>
+<script src="js/net.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
 </body>

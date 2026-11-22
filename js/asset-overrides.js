@@ -7,10 +7,12 @@
 // 例:
 //   'az_grunt': 'assets/az_grunt.png',
 //   'cr_giant': { src: 'assets/cr_giant.png', scale: 0.5 },
-//   'cr_fighter': { src: 'assets/cr_fighter.png', facing: 'left' },
+//   'cr_raider_jet': { src: 'assets/cr_raider_jet.png', facing: 'left' },
 //
 // スプライト ID:
-//   アズール連合  : az_commander, az_grunt, az_artillery, az_fighter, az_heavy, az_giant
-//   クリムゾン帝国: cr_commander, cr_grunt, cr_artillery, cr_fighter, cr_heavy, cr_giant
+//   アズール連合  : az_commander, az_raider, az_raider_jet（変形後）, az_heavy, az_grunt, az_special,
+//                   az_artillery, az_giant, az_ship（戦艦）
+//   クリムゾン帝国: cr_commander, cr_raider, cr_raider_jet（変形後）, cr_heavy, cr_grunt, cr_special,
+//                   cr_artillery, cr_giant, cr_ship（戦艦）
 SL.ASSET_OVERRIDES = {
 };

@@ -7,18 +7,19 @@ SL.Input = (function () {
     {
       up: ['KeyW'], down: ['KeyS'], left: ['KeyA'], right: ['KeyD'],
       fire1: ['KeyJ'], fire2: ['KeyK'], melee: ['KeyL'], dash: ['Space'],
-      target: ['KeyU'], swap: ['KeyI'],
+      target: ['KeyU'], swap: ['Tab'], transform: ['ShiftLeft'],
     },
     {
       up: ['ArrowUp'], down: ['ArrowDown'], left: ['ArrowLeft'], right: ['ArrowRight'],
       fire1: ['Numpad1', 'Comma'], fire2: ['Numpad2', 'Period'], melee: ['Numpad3', 'Slash'],
-      dash: ['Numpad0', 'ShiftRight'], target: ['Numpad4', 'Semicolon'], swap: ['Numpad5', 'Quote'],
+      dash: ['Numpad0', 'ControlRight'], target: ['Numpad4', 'Semicolon'], swap: ['Numpad5', 'Quote'],
+      transform: ['Numpad6', 'ShiftRight'],
     },
   ];
   // 標準配置のゲームパッドのボタン番号
-  const PAD = { fire1: [0], fire2: [1], melee: [2], target: [3], swap: [6, 4], dash: [7, 5] };
+  const PAD = { fire1: [0], fire2: [1], melee: [2], target: [3], swap: [6], dash: [7, 5], transform: [4] };
   const PAD_START = 9, PAD_BACK = 8;
-  const ACTIONS = ['fire1', 'fire2', 'melee', 'dash', 'target', 'swap'];
+  const ACTIONS = ['fire1', 'fire2', 'melee', 'dash', 'target', 'swap', 'transform'];
   const DEADZONE = 0.25;
 
   const PREVENT = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab']);
@@ -27,9 +28,12 @@ SL.Input = (function () {
   const down = new Set();     // 押されているキー
   const keyEdges = new Set(); // 前回の consume 以降に押されたキー
   let anyKeyEdge = false;
+  let textMode = false;       // 部屋コードの入力中
+  let typed = [];             // 入力された文字（e.key）
 
   window.addEventListener('keydown', (e) => {
-    if (PREVENT.has(e.code)) e.preventDefault();
+    if (PREVENT.has(e.code) || (textMode && e.key === 'Backspace')) e.preventDefault();
+    if (textMode) typed.push(e.key);
     if (e.repeat) return;
     down.add(e.code);
     keyEdges.add(e.code);
@@ -53,7 +57,7 @@ SL.Input = (function () {
   }));
 
   const global = {
-    up: false, down: false, confirm: false, pause: false, quit: false, mute: false, any: false,
+    up: false, down: false, confirm: false, pause: false, quit: false, mute: false, any: false, back: false,
   };
   let prevPadButtons = [];   // パッドごとの前フレームのボタン状態
   let prevStickY = [];
@@ -145,8 +149,9 @@ SL.Input = (function () {
     if (anyEdge(['KeyS', 'ArrowDown'])) global.down = true;
     if (anyEdge(['Enter', 'NumpadEnter', 'Space', 'KeyJ', 'Numpad1'])) global.confirm = true;
     if (anyEdge(['Escape', 'KeyP'])) global.pause = true;
+    if (anyEdge(['Escape'])) global.back = true;
     if (anyEdge(['KeyQ'])) global.quit = true;
-    if (anyEdge(['KeyM'])) global.mute = true;
+    if (anyEdge(['KeyM']) && !textMode) global.mute = true;
     if (anyKeyEdge) global.any = true;
 
     pads.forEach((pad, i) => {
@@ -157,7 +162,7 @@ SL.Input = (function () {
       if (edge(13)) global.down = true;
       if (edge(0) || edge(PAD_START)) global.confirm = true;
       if (edge(PAD_START)) global.pause = true;
-      if (edge(PAD_BACK)) global.quit = true;
+      if (edge(PAD_BACK)) { global.quit = true; global.back = true; }
       if (now.some((v, idx) => v && !prev[idx])) global.any = true;
       const sy = pad.axes[1] || 0;
       const psy = prevStickY[i] || 0;
@@ -178,5 +183,16 @@ SL.Input = (function () {
 
   function padCount() { return getPads().length; }
 
-  return { update, consume, players, global, padCount, KEYS };
+  // 文字入力（部屋コード用）
+  function setTextMode(on) {
+    textMode = !!on;
+    typed = [];
+  }
+  function takeTyped() {
+    const t = typed;
+    typed = [];
+    return t;
+  }
+
+  return { update, consume, players, global, padCount, KEYS, ACTIONS, setTextMode, takeTyped };
 })();

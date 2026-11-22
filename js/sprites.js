@@ -47,7 +47,7 @@ SL.Sprites = (function () {
     };
   }
 
-  // ---- 仮の図形（役割ごと。f は勢力 'az' / 'cr'、p はパレット） ----
+  // ---- 仮の図形（f は勢力 'az' / 'cr'、p はパレット） ----
   const SHAPES = {
     grunt: {
       w: 14, h: 17,
@@ -87,6 +87,36 @@ SL.Sprites = (function () {
         r(9, 20, 4, 1, p.dark);
       },
     },
+    raider: {
+      w: 15, h: 18,
+      draw(r, p, f) {
+        r(0, 4, 3, 3, p.main);                           // 背中の翼
+        r(0, 9, 3, 3, p.main);
+        r(1, 6, 3, 2, p.light);
+        r(4, 0, 7, 6, f === 'az' ? p.light : p.main);    // 頭
+        r(5, 0, 5, 1, p.accent);
+        r(8, 2, 3, 2, p.visor);
+        r(3, 6, 8, 6, f === 'az' ? p.main : p.dark);     // 胴
+        r(5, 8, 3, 2, p.accent);
+        r(8, 8, 7, 2, p.metal);                          // 銃
+        r(4, 12, 3, 5, f === 'az' ? p.light : p.main);   // 脚
+        r(8, 12, 3, 5, f === 'az' ? p.light : p.main);
+        r(3, 17, 4, 1, p.dark);
+        r(8, 17, 4, 1, p.dark);
+      },
+    },
+    jet: {
+      w: 22, h: 9,
+      draw(r, p, f) {
+        r(1, 0, 3, 4, p.main);                           // 尾翼
+        r(2, 3, 17, 3, f === 'az' ? p.light : p.main);   // 胴体
+        r(19, 4, 3, 1, f === 'az' ? p.light : p.main);   // 機首
+        r(12, 2, 4, 1, p.visor);                         // 操縦席
+        r(6, 6, 9, 2, p.dark);                           // 翼
+        r(0, 4, 2, 2, p.metal);                          // エンジン
+        r(8, 4, 4, 1, p.accent);
+      },
+    },
     heavy: {
       w: 21, h: 18,
       draw(r, p, f) {
@@ -97,12 +127,46 @@ SL.Sprites = (function () {
         r(1, 5, 5, 4, p.dark);                           // 肩アーマー
         r(7, 7, 5, 3, p.dark);
         r(8, 8, 3, 1, p.accent);
-        r(8, 3, 11, 3, p.metal);                         // 肩のバズーカ
+        r(8, 3, 11, 3, p.metal);                         // 肩の大砲
         r(18, 2, 3, 5, p.dark);
         r(3, 12, 5, 5, f === 'az' ? p.light : p.dark);   // 脚
         r(10, 12, 5, 5, f === 'az' ? p.light : p.dark);
         r(2, 17, 6, 1, p.dark);
         r(10, 17, 6, 1, p.dark);
+      },
+    },
+    special_az: { // 薙刀を持つ機体
+      w: 17, h: 18,
+      draw(r, p) {
+        r(12, 0, 3, 4, p.visor);                         // 刃
+        r(13, 4, 1, 14, p.metal);                        // 柄
+        r(0, 7, 3, 5, p.metal);
+        r(4, 1, 7, 6, p.light);
+        r(4, 1, 7, 1, p.accent);
+        r(7, 3, 4, 2, p.visor);
+        r(3, 7, 8, 6, p.main);
+        r(10, 9, 4, 2, p.light);                         // 腕
+        r(4, 13, 3, 4, p.light);
+        r(8, 13, 3, 4, p.light);
+        r(3, 17, 4, 1, p.dark);
+        r(8, 17, 4, 1, p.dark);
+      },
+    },
+    special_cr: { // しびれるムチを持つ機体
+      w: 18, h: 17,
+      draw(r, p) {
+        r(0, 6, 3, 5, p.metal);
+        r(4, 0, 7, 6, p.main);
+        r(6, 2, 1, 1, p.visor); r(8, 2, 1, 1, p.visor); r(10, 2, 1, 1, p.visor);
+        r(3, 6, 8, 6, p.dark);
+        r(1, 6, 4, 3, p.red);                            // 肩
+        r(10, 8, 3, 2, p.main);                          // 腕
+        const coil = [[13, 9], [14, 10], [15, 11], [16, 12], [15, 13], [14, 14], [15, 15], [16, 16]];
+        for (const [x, y] of coil) r(x, y, 1, 1, p.accent); // ムチ
+        r(4, 12, 3, 4, p.main);
+        r(8, 12, 3, 4, p.main);
+        r(3, 16, 4, 1, p.dark);
+        r(8, 16, 4, 1, p.dark);
       },
     },
     artillery: {
@@ -117,29 +181,22 @@ SL.Sprites = (function () {
         for (let x = 3; x < 17; x += 3) r(x, 10, 1, 2, p.dark);
       },
     },
-    fighter: {
-      w: 22, h: 9,
-      draw(r, p, f) {
-        r(1, 0, 3, 4, p.main);                           // 尾翼
-        r(2, 3, 17, 3, f === 'az' ? p.light : p.main);   // 胴体
-        r(19, 4, 3, 1, f === 'az' ? p.light : p.main);   // 機首
-        r(12, 2, 4, 1, p.visor);                         // 操縦席
-        r(6, 6, 9, 2, p.dark);                           // 翼
-        r(0, 4, 2, 2, p.metal);                          // エンジン
-        r(8, 4, 4, 1, p.accent);
-      },
-    },
-    giant_az: {
-      w: 50, h: 22,
+    giant_az: { // 大型の要塞機
+      w: 34, h: 30,
       draw(r, p) {
-        r(20, 2, 10, 6, p.light);                        // 艦橋
-        r(23, 4, 6, 2, p.visor);
-        r(2, 8, 44, 8, p.light);                         // 船体
-        r(4, 10, 40, 2, p.main);
-        r(30, 13, 12, 1, p.accent);
-        r(46, 10, 4, 4, p.light);                        // 艦首
-        r(6, 16, 38, 4, p.metal);                        // 船底
-        r(0, 9, 3, 6, p.metal);                          // 推進器
+        r(8, 0, 12, 8, p.light);
+        r(12, 3, 6, 2, p.visor);
+        r(2, 8, 26, 12, p.main);
+        r(0, 6, 8, 6, p.light);
+        r(22, 6, 8, 6, p.light);
+        r(24, 4, 10, 3, p.metal);                        // 肩の砲
+        r(30, 3, 4, 5, p.dark);
+        r(10, 11, 10, 5, p.dark);
+        r(13, 12, 4, 2, p.accent);
+        r(5, 20, 7, 8, p.light);
+        r(18, 20, 7, 8, p.light);
+        r(4, 28, 9, 2, p.dark);
+        r(17, 28, 9, 2, p.dark);
       },
     },
     giant_cr: {
@@ -159,6 +216,34 @@ SL.Sprites = (function () {
         r(16, 21, 3, 8, p.metal);
         r(25, 21, 3, 8, p.metal);
         r(33, 20, 3, 9, p.metal);
+      },
+    },
+    ship_az: { // 戦艦
+      w: 66, h: 26,
+      draw(r, p) {
+        r(26, 0, 12, 8, p.light);                        // 艦橋
+        r(29, 2, 8, 3, p.visor);
+        r(14, 4, 6, 4, p.main);
+        r(4, 8, 56, 10, p.light);                        // 船体
+        r(6, 10, 52, 2, p.main);
+        r(60, 10, 6, 6, p.light);                        // 艦首
+        r(44, 13, 14, 4, p.dark);                        // 格納庫の入口
+        r(8, 18, 48, 5, p.metal);                        // 船底
+        r(0, 9, 4, 8, p.metal);                          // 推進器
+        r(0, 11, 2, 4, p.accent);
+      },
+    },
+    ship_cr: {
+      w: 66, h: 28,
+      draw(r, p) {
+        r(30, 0, 8, 6, p.main);                          // 艦橋
+        r(32, 2, 4, 2, p.visor);
+        r(6, 6, 52, 6, p.main);
+        r(2, 12, 62, 8, p.dark);
+        r(58, 8, 8, 6, p.main);                          // 艦首
+        r(46, 14, 12, 4, p.metal);                       // 格納庫の入口
+        r(10, 20, 44, 6, p.metal);
+        r(0, 12, 3, 8, p.red);                           // 推進器
       },
     },
   };
@@ -181,15 +266,24 @@ SL.Sprites = (function () {
     return out;
   }
 
+  function shapeFor(role, prefix) {
+    if (role === 'giant' || role === 'special') return SHAPES[role + '_' + prefix];
+    return SHAPES[role] || SHAPES.grunt;
+  }
+
   function build() {
-    for (const typeId in SL.UNIT_TYPES) {
-      const t = SL.UNIT_TYPES[typeId];
-      const faction = SL.FACTIONS.find((f) => typeId.startsWith(f.prefix + '_'));
-      const prefix = faction ? faction.prefix : 'az';
-      const palette = Object.assign({ red: '#d23a3a' }, faction ? faction.palette : SL.FACTIONS[0].palette);
-      const shape = t.role === 'giant' ? SHAPES['giant_' + prefix] || SHAPES.giant_az : SHAPES[t.role] || SHAPES.grunt;
-      store[t.sprite] = makeEntry(buildPlaceholder(shape, palette, prefix), false);
-    }
+    SL.FACTIONS.forEach((faction, team) => {
+      const prefix = faction.prefix;
+      const palette = Object.assign({ red: '#d23a3a' }, faction.palette);
+      for (const typeId in SL.UNIT_TYPES) {
+        if (!typeId.startsWith(prefix + '_')) continue;
+        const t = SL.UNIT_TYPES[typeId];
+        store[t.sprite] = makeEntry(buildPlaceholder(shapeFor(t.role, prefix), palette, prefix), false);
+        if (t.transform) store[t.transform.sprite] = makeEntry(buildPlaceholder(SHAPES.jet, palette, prefix), false);
+      }
+      const ship = SL.SHIPS[team];
+      store[ship.sprite] = makeEntry(buildPlaceholder(SHAPES['ship_' + prefix], palette, prefix), false);
+    });
   }
 
   // 差し替え画像を読み込む。失敗したものは仮の図形のまま。
