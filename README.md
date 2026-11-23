@@ -10,7 +10,7 @@
 - TIME は 99 から減っていく（初期設定では 2 秒で 1 減る）
 - 相手の機体を全滅させたら勝ち。時間切れのときは、残り機数 → 戦艦が残っているか → 残り HP の合計 の順で比べ、それも同じなら引き分け
 - 遊び方は 3 種類: 1P VS CPU、1P VS 2P（1 台の画面を左右に分割）、ONLINE（インターネット対戦）
-- タイトルの SETTINGS から、機体・武装・出撃の数・絵を変える設定ページ（claude.ai）を開ける
+- タイトルの SETTINGS から、機体・武装・出撃の数・絵を変える設定ページを開ける。変えた設定はそのブラウザで試してから、ページから公開ゲームに反映できる
 
 ## 起動方法
 
@@ -109,7 +109,7 @@
 
 ## 設定ページ（兵器と出撃）
 
-タイトルの `SETTINGS`（または https://claude.ai/artifact/YTenoqEiZoGtxv3XoME23k ）で開く。claude.ai のページなので、持ち主がサインインしているときだけ開ける。
+タイトルの `SETTINGS`、または `settings.html`（公開版は https://riku1128-tong.github.io/stellar-legion/settings.html ）で開く。
 
 | タブ | できること | 書き換わるファイル |
 |---|---|---|
@@ -118,8 +118,12 @@
 | 出撃 | 各勢力から何をいくつ出すか（1〜30）。開始時の陣形を図で見られる | `js/army.js` |
 | 絵 | JPG などの背景を消して切り抜き、機体や戦艦の絵として取り込む | `assets/<ID>.png` と `js/asset-overrides.js` |
 
-- 変えた値はページに自動で保存される。ゲームに入れるには、Claude に「設定を反映して」と頼む（3 つのファイルを書き直し、試合を流して確かめてから公開する）。または、各ファイルの「中身をコピー」で出た内容で、同じ名前のファイルをまるごと置き換える
-- 道具: `node tools/settings.js export`（いまのファイルを JSON で出す）、`apply <json>`（JSON から 3 つのファイルを書き直す。おかしな値なら書き込まない）、`check`（書き出しと読み込みで中身が変わらないか確かめる）、`image <ID> <png> <高さ> <幅の上限>`（取り込んだ絵を置いて登録する）
+- 変えた値は、そのブラウザに自動で保存される（ほかの人には見えない）
+- **このブラウザで試す**: 変えた設定のゲームを `index.html?try=1` で開く。公開ゲームは変わらない。タイトルの上に TRIAL と出て、インターネット対戦はできない（相手と設定がそろわないため）
+- **公開ゲームに反映する**: GitHub のファイルを 1 回のコミットで書き換える。1〜2 分で公開ゲームが新しくなる。GitHub の Fine-grained token が要る（Repository access でこのリポジトリだけを選び、Contents を Read and write にする）。トークンは api.github.com にだけ送られ、「このブラウザに覚えておく」を外すとタブを閉じたときに消える
+- 書き込む先は `js/config.js` の `REPO` と `BRANCH`
+- 各ファイルの「中身をコピー」で出た内容を、同じ名前のファイルにまるごと貼ってもよい
+- 道具: `node tools/settings.js export`（いまのファイルを JSON で出す）、`apply <json>`（JSON から 3 つのファイルを書き直す。おかしな値なら書き込まない）、`check`（書き出しと読み込みで中身が変わらないか確かめる）、`image <ID> <png> <高さ> <幅の上限>`（絵を置いて登録する）
 
 ## 画像の差し替え方法
 
@@ -212,4 +216,7 @@ az_grunt: { src: 'assets/my_grunt.png', height: 32, maxWidth: 40, facing: 'left'
 | `js/game.js` | 画面遷移、プレイヤー、カメラ、乗り換え、勝敗判定、対戦ロビー |
 | `js/main.js` | 起動とゲームループ |
 | `assets/` | 差し替え用の画像を置く場所 |
-| `tools/settings.js` / `tools/settings-format.js` | 設定ページとファイルの橋渡し（Node.js で動かす） |
+| `settings.html` / `settings/` | 設定ページ（編集、このブラウザへの保存、お試し、GitHub への反映） |
+| `js/trial.js` | お試し設定（`?try=1`）を読み込む |
+| `tools/settings-format.js` | 設定ファイルの書式と値の検査（設定ページと `tools/settings.js` で共通） |
+| `tools/settings.js` | 設定とファイルの出し入れ（Node.js で動かす） |

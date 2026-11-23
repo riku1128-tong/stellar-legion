@@ -26,7 +26,9 @@
       this.stateTime = 0;
       this.time = 0;
       this.menuIndex = 0;
-      this.menuItems = ['1P VS CPU', '1P VS 2P', 'ONLINE'].concat(C.SETTINGS_URL ? ['SETTINGS'] : []);
+      // お試し設定のときは、相手と設定がそろわないのでインターネット対戦を出さない
+      this.trial = !!(SL.TRIAL && !SL.TRIAL.error);
+      this.menuItems = ['1P VS CPU', '1P VS 2P'].concat(this.trial ? [] : ['ONLINE'], C.SETTINGS_URL ? ['SETTINGS'] : []);
       this.mode = 'cpu';          // 'cpu' | '2p' | 'demo' | 'online'
       this.localPi = 0;           // この画面で操作しているプレイヤー（オンラインで参加した側は 1）
       this.world = null;
@@ -276,15 +278,16 @@
       if (g.down) { this.menuIndex = (this.menuIndex + 1) % n; SL.Audio.play('select'); }
       if (g.confirm && this.stateTime > 0.2) {
         SL.Audio.ensure();
-        if (this.menuItems[this.menuIndex] === 'SETTINGS') {
+        const item = this.menuItems[this.menuIndex];
+        if (item === 'SETTINGS') {
           // 設定ページ（機体・武装・出撃・絵）へ移る。同じタブで開く（新しいタブはポップアップとして止められることがある）
           SL.Audio.play('select');
           location.href = C.SETTINGS_URL;
-        } else if (this.menuIndex === 2) {
+        } else if (item === 'ONLINE') {
           this.lobby = { menu: 0, code: '', status: '', msg: SL.Net.available() ? '' : 'ONLINE IS NOT AVAILABLE (PEERJS NOT LOADED)' };
           this.setState('online');
         } else {
-          this.startMatch(this.menuIndex === 0 ? 'cpu' : '2p');
+          this.startMatch(item === '1P VS CPU' ? 'cpu' : '2p');
         }
       }
     }
@@ -720,7 +723,14 @@
       });
       F.draw(ctx, 'ESC/P: PAUSE   M: SOUND ON/OFF   (N = NUMPAD)', C.W / 2, 226, { align: 'center', color: '#7a84a8' });
       if (this.menuItems[this.menuIndex] === 'SETTINGS') {
-        F.draw(ctx, 'UNITS, WEAPONS, ARMY AND IMAGES. OPENS THE SETTINGS PAGE ON CLAUDE.AI', C.W / 2, 172, { align: 'center', color: '#ffd23a' });
+        F.draw(ctx, 'OPENS THE SETTINGS PAGE: UNITS, WEAPONS, ARMY AND IMAGES', C.W / 2, 172, { align: 'center', color: '#ffd23a' });
+      }
+      if (this.trial) {
+        ctx.fillStyle = '#ffd23a';
+        ctx.fillRect(0, 0, C.W, 14);
+        F.draw(ctx, 'TRIAL SETTINGS FROM THE SETTINGS PAGE (THIS BROWSER ONLY)', C.W / 2, 4, { align: 'center', color: '#0b1020' });
+      } else if (SL.TRIAL && SL.TRIAL.error) {
+        F.draw(ctx, SL.TRIAL.error, C.W / 2, 4, { align: 'center', color: '#ff6a5a' });
       }
       F.draw(ctx, 'RETURN TO YOUR BATTLESHIP TO REPAIR. DESTROY THE ENEMY SHIP FOR A BONUS.', C.W / 2, 240, { align: 'center', color: '#4be06a' });
       const pads = SL.Input.padCount();

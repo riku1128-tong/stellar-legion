@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STELLAR LEGION 兵器と出撃</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=IBM+Plex+Mono:wght@400;600&family=M+PLUS+1p:wght@400;500;700&family=Silkscreen&display=swap">
+<style>
+/* Layout: hangar console. A slim header with a save lamp, three tabs (機体 / 武装 / 出撃), a work column of
+   collapsible unit bays and weapon cards, and a right rail that turns the edits into the three game files.
+   Single dark theme on purpose: it matches the game's space screen. */
+:root {
+  --void: #070a14;
+  --hull: #0d1322;
+  --hull-2: #141c31;
+  --hull-3: #1b2540;
+  --seam: #26324f;
+  --text: #e4e9f5;
+  --dim: #8d98b6;
+  --signal: #ffd23a;
+  --azure: #5ab4ff;
+  --crimson: #ff6060;
+  --k-solid: #ffb347;
+  --k-beam: #8ff4ff;
+  --k-melee: #ff8ad8;
+  --ok: #6fe3a0;
+  --bad: #ff6a5a;
+  --f-display: 'DotGothic16', 'M PLUS 1p', system-ui, sans-serif;
+  --f-pixel: 'Silkscreen', 'DotGothic16', ui-monospace, monospace;
+  --f-body: 'M PLUS 1p', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--void); }
+body {
+  margin: 0;
+  background: var(--void);
+  background-image: radial-gradient(ellipse 80% 40% at 70% -10%, rgba(90, 120, 220, 0.16), transparent 70%);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 14px;
+  line-height: 1.6;
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.app {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 22px 56px;
+}
+
+/* ---- header ---- */
+.bar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; padding-bottom: 14px; border-bottom: 2px solid var(--seam); }
+.brand-mark { font-family: var(--f-pixel); font-size: 12px; letter-spacing: 0.2em; color: var(--signal); }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(28px, 4.2vw, 40px); line-height: 1.1; margin: 2px 0 0; letter-spacing: 0.04em; text-wrap: balance; }
+.lamp { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--dim); padding: 6px 10px; border: 1px solid var(--seam); background: var(--hull); }
+.lamp i { width: 9px; height: 9px; background: var(--dim); display: block; }
+.lamp[data-state="saved"] i { background: var(--ok); }
+.lamp[data-state="saving"] i, .lamp[data-state="pending"] i { background: var(--signal); animation: blink 0.8s steps(2) infinite; }
+.lamp[data-state="error"] i { background: var(--bad); }
+.lamp[data-state="error"] { color: var(--bad); }
+@keyframes blink { 50% { opacity: 0.2; } }
+@media (prefers-reduced-motion: reduce) { .lamp i { animation: none !important; } }
+
+/* ---- tabs ---- */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 20px; }
+.tab { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--hull); border: 2px solid var(--seam); cursor: pointer; font-family: var(--f-display); font-size: 17px; letter-spacing: 0.04em; }
+.tab:hover { border-color: var(--dim); }
+.tab[aria-selected="true"] { background: var(--signal); border-color: var(--signal); color: var(--void); }
+.badge { font-family: var(--f-mono); font-size: 11px; font-weight: 600; padding: 0 6px; line-height: 18px; background: var(--hull-3); color: var(--signal); }
+.tab[aria-selected="true"] .badge { background: var(--void); }
+.badge:empty { display: none; }
+
+/* ---- layout ---- */
+.layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1100px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  .rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); max-height: calc(100vh - 32px); overflow: auto; }
+}
+main { min-width: 0; }
+.view { display: grid; gap: 22px; }
+.view-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 20px; }
+.lead { margin: 0; color: var(--dim); max-width: 62ch; }
+.state { padding: 28px; border: 1px dashed var(--seam); background: var(--hull); max-width: 62ch; }
+.state h2 { font-family: var(--f-display); font-weight: 400; margin: 0 0 6px; font-size: 20px; }
+.state p { margin: 0; color: var(--dim); }
+
+h2.sec { font-family: var(--f-display); font-weight: 400; font-size: 21px; margin: 0; display: flex; align-items: baseline; gap: 10px; letter-spacing: 0.03em; }
+h2.sec small { font-family: var(--f-pixel); font-size: 11px; color: var(--dim); letter-spacing: 0.12em; }
+.fac-azure { --fac: var(--azure); }
+.fac-crimson { --fac: var(--crimson); }
+.fac-dot { width: 10px; height: 10px; background: var(--fac); display: inline-block; align-self: center; }
+
+/* ---- buttons ---- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 12px; border: 2px solid var(--signal); background: transparent; color: var(--signal); font-weight: 700; font-size: 13px; cursor: pointer; line-height: 1.4; }
+.btn:hover:not(:disabled) { background: var(--signal); color: var(--void); }
+.btn.ghost { border-color: var(--seam); color: var(--text); font-weight: 500; }
+.btn.ghost:hover:not(:disabled) { border-color: var(--dim); background: var(--hull-3); color: var(--text); }
+.btn.danger { border-color: var(--bad); color: var(--bad); }
+.btn.danger:hover:not(:disabled) { background: var(--bad); color: var(--void); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.small { padding: 3px 9px; font-size: 12px; }
+.confirm { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.confirm span { color: var(--bad); }
+
+/* ---- fields ---- */
+.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px 18px; }
+.f { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 10px; }
+.fl { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; min-width: 0; }
+.f.stack { grid-template-columns: minmax(0, 1fr); }
+.f.stack input[type="text"], .f.stack select { width: 100% !important; max-width: 340px; }
+.fl small { color: var(--dim); font-size: 11px; }
+.f.changed .fl::before { content: ""; width: 6px; height: 6px; background: var(--signal); flex: none; }
+.fx { grid-column: 1 / -1; font-family: var(--f-mono); font-size: 11px; color: var(--dim); min-height: 0; }
+.fx:empty { display: none; }
+.fx s { color: var(--signal); text-decoration: none; }
+input[type="number"], input[type="text"], select {
+  background: var(--hull-2); border: 1px solid var(--seam); padding: 5px 8px; min-width: 0;
+}
+input[type="number"] { width: 88px; font-family: var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; }
+input[type="text"] { width: 100%; font-family: var(--f-mono); }
+input:disabled { opacity: 0.4; }
+input:hover:not(:disabled), select:hover { border-color: var(--dim); }
+select { width: 100%; padding-right: 4px; cursor: pointer; }
+input[type="color"] { width: 44px; height: 30px; padding: 2px; background: var(--hull-2); border: 1px solid var(--seam); cursor: pointer; }
+.check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--signal); }
+.note { font-size: 12px; color: var(--dim); margin: 0; }
+.chip { font-size: 11px; padding: 1px 7px; border: 1px solid currentColor; white-space: nowrap; line-height: 1.6; }
+
+/* ---- units ---- */
+.fac-block { display: grid; gap: 10px; }
+.fac-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-bottom: 8px; border-bottom: 2px solid var(--fac); }
+.bays { display: grid; gap: 8px; }
+details.bay { background: var(--hull); border: 1px solid var(--seam); border-left: 4px solid var(--fac); }
+details.bay[open] { background: var(--hull); border-color: var(--dim); border-left-color: var(--fac); }
+details.bay > summary { list-style: none; cursor: pointer; padding: 10px 14px; display: grid; grid-template-columns: 18px minmax(0, 1.3fr) minmax(0, 2fr) auto; gap: 4px 14px; align-items: center; }
+details.bay > summary::-webkit-details-marker { display: none; }
+.caret { width: 10px; height: 10px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim); transform: rotate(-45deg); transition: transform 0.15s; justify-self: center; }
+details[open] > summary .caret { transform: rotate(45deg); }
+@media (prefers-reduced-motion: reduce) { .caret { transition: none; } }
+.uname { font-family: var(--f-pixel); font-size: 15px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.uname.changed::after { content: ""; width: 7px; height: 7px; background: var(--signal); flex: none; }
+.urole { font-size: 12px; color: var(--dim); }
+.umeta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-family: var(--f-mono); font-size: 12px; color: var(--dim); min-width: 0; }
+.umeta b { color: var(--text); font-weight: 600; }
+.slots-mini { display: inline-flex; gap: 6px; }
+.slots-mini span { color: var(--text); }
+.slots-mini em { font-style: normal; color: var(--dim); }
+.sum-right { display: flex; gap: 6px; align-items: center; }
+.size-chip { font-family: var(--f-pixel); font-size: 12px; padding: 0 6px; border: 1px solid var(--signal); color: var(--signal); }
+.tf-chip { color: var(--k-beam); }
+.count-chip { color: var(--ok); }
+.count-chip.zero { color: var(--dim); }
+.bay-body { padding: 4px 14px 16px 46px; display: grid; gap: 16px; }
+.part { display: grid; gap: 10px; }
+.part h3 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); display: flex; align-items: center; gap: 10px; }
+.part h3::after { content: ""; flex: 1; height: 1px; background: var(--seam); }
+.two { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 8px 18px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--seam); }
+.seg label { cursor: pointer; padding: 6px 12px; font-size: 13px; display: grid; gap: 0; line-height: 1.3; border-right: 1px solid var(--seam); }
+.seg label:last-child { border-right: 0; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label b { font-family: var(--f-pixel); font-size: 15px; font-weight: 400; }
+.seg label small { color: var(--dim); font-size: 11px; }
+.seg label:has(input:checked) { background: var(--signal); color: var(--void); }
+.seg label:has(input:checked) small { color: var(--void); }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--signal); outline-offset: -4px; }
+.slot { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 6px 12px; align-items: start; padding: 10px 0; border-top: 1px dashed var(--seam); }
+.slot:first-of-type { border-top: 0; }
+.key { font-family: var(--f-pixel); font-size: 12px; display: grid; gap: 2px; justify-items: start; }
+.key kbd { font-family: var(--f-pixel); font-size: 14px; border: 1px solid var(--dim); padding: 0 6px; line-height: 20px; }
+.key span { font-family: var(--f-body); font-size: 11px; color: var(--dim); }
+.slot-main { display: grid; gap: 8px; min-width: 0; }
+.slot-main select { max-width: 340px; }
+.slot-nums { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.slot-nums .f { grid-template-columns: auto auto; }
+.bay-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+@media (max-width: 720px) {
+  details.bay > summary { grid-template-columns: 18px minmax(0, 1fr) auto; }
+  details.bay > summary .umeta { grid-column: 2 / -1; }
+  .bay-body { padding-left: 14px; }
+  .slot { grid-template-columns: minmax(0, 1fr); }
+  .key { grid-auto-flow: column; align-items: center; gap: 8px; justify-content: start; }
+}
+
+/* ---- weapons ---- */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 12px; }
+.wcard { background: var(--hull); border: 1px solid var(--seam); border-top: 3px solid var(--tone); padding: 12px 14px 14px; display: grid; gap: 10px; align-content: start; }
+.wcard[data-tone="solid"] { --tone: var(--k-solid); }
+.wcard[data-tone="beam"] { --tone: var(--k-beam); }
+.wcard[data-tone="melee"] { --tone: var(--k-melee); }
+.wcard-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.wname { font-family: var(--f-pixel); font-weight: 400; font-size: 15px; margin: 0; letter-spacing: 0.04em; overflow-wrap: anywhere; }
+.wid { font-family: var(--f-mono); font-size: 11px; color: var(--dim); }
+.wcard .chip { color: var(--tone); }
+.users { margin: 0; font-size: 12px; color: var(--dim); }
+.users .u-az { color: var(--azure); }
+.users .u-cr { color: var(--crimson); }
+.derived { margin: 0; font-family: var(--f-mono); font-size: 12px; color: var(--text); display: flex; flex-wrap: wrap; gap: 2px 14px; padding-top: 8px; border-top: 1px solid var(--seam); }
+.derived span { color: var(--dim); }
+.wcard details summary { cursor: pointer; font-size: 12px; color: var(--dim); }
+.wcard details[open] summary { margin-bottom: 8px; }
+.blade-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---- army ---- */
+.army-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 18px; }
+.army-fac { background: var(--hull); border: 1px solid var(--seam); border-top: 3px solid var(--fac); padding: 12px 14px; display: grid; gap: 10px; align-content: start; }
+.army-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.total { font-family: var(--f-mono); font-size: 13px; color: var(--dim); }
+.total b { font-size: 20px; color: var(--text); }
+.total.full b { color: var(--signal); }
+.rows { list-style: none; margin: 0; padding: 0; display: grid; }
+.row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--seam); }
+.row:first-child { border-top: 0; }
+.glyph { width: 26px; height: 26px; display: grid; place-items: center; font-family: var(--f-display); font-size: 15px; background: var(--hull-3); border: 1px solid var(--fac); }
+.row-name { min-width: 0; display: grid; line-height: 1.35; }
+.row-name strong { font-family: var(--f-pixel); font-weight: 400; font-size: 13px; letter-spacing: 0.04em; overflow-wrap: anywhere; display: flex; gap: 6px; align-items: center; }
+.row-name strong.changed::after { content: ""; width: 6px; height: 6px; background: var(--signal); }
+.row-name span { font-size: 11px; color: var(--dim); font-family: var(--f-mono); }
+.step { display: inline-flex; align-items: stretch; }
+.step button { width: 32px; border: 1px solid var(--seam); background: var(--hull-2); cursor: pointer; font-family: var(--f-mono); font-size: 16px; line-height: 1; }
+.step button:hover:not(:disabled) { background: var(--hull-3); border-color: var(--dim); }
+.step button:disabled { opacity: 0.35; cursor: not-allowed; }
+.step input { width: 52px; text-align: center; border-left: 0; border-right: 0; }
+.hp-sum { font-size: 12px; color: var(--dim); font-family: var(--f-mono); margin: 0; }
+figure.field { margin: 0; background: var(--hull); border: 1px solid var(--seam); padding: 12px; display: grid; gap: 10px; }
+figure.field canvas { display: block; width: 100%; max-width: 100%; background: var(--hull-2); }
+figcaption { font-size: 12px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+figcaption .lg { display: inline-flex; align-items: center; gap: 5px; }
+figcaption .lg i { font-style: normal; font-family: var(--f-display); width: 18px; height: 18px; display: grid; place-items: center; border: 1px solid var(--dim); font-size: 11px; color: var(--text); }
+figcaption .lg i.lead1 { border-color: var(--signal); }
+
+/* ---- images ---- */
+.cut { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .cut { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; } }
+.bench { display: grid; gap: 10px; min-width: 0; }
+.drop { border: 2px dashed var(--seam); padding: 10px; display: grid; place-items: center; min-height: 260px;
+  background: repeating-conic-gradient(var(--hull-2) 0% 25%, var(--hull-3) 0% 50%) 0 0 / 20px 20px; }
+.drop.dragging { border-color: var(--signal); }
+.drop canvas { max-width: 100%; max-height: 460px; cursor: crosshair; }
+.drop canvas.pick { cursor: copy; }
+.bench-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.file-btn { position: relative; display: inline-flex; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.file-btn:focus-within { outline: 2px solid var(--signal); outline-offset: 2px; }
+.seg-btn { display: inline-flex; border: 1px solid var(--seam); }
+.seg-btn button { background: var(--hull-2); border: 0; border-right: 1px solid var(--seam); padding: 5px 10px; font-size: 12px; cursor: pointer; }
+.seg-btn button:last-child { border-right: 0; }
+.seg-btn button[aria-pressed="true"] { background: var(--signal); color: var(--void); }
+.cut-panel { display: grid; gap: 16px; background: var(--hull); border: 1px solid var(--seam); padding: 14px; align-content: start; min-width: 0; }
+.cut-field { display: grid; gap: 6px; }
+.cut-label { font-size: 13px; font-weight: 700; }
+.cut-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cut-between { justify-content: space-between; }
+.cut-sizes { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.cut-sizes input[type="number"] { width: 72px; }
+.cut-new { display: grid; gap: 4px; margin-top: 6px; }
+.cut-checks { display: grid; gap: 6px; font-size: 13px; }
+.cut-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.swatch { width: 22px; height: 22px; border: 1px solid var(--dim); display: inline-block; }
+.val { font-family: var(--f-mono); font-size: 12px; color: var(--signal); }
+input[type="range"] { width: 100%; accent-color: var(--signal); }
+#cut-fallback img { max-width: 100%; background: var(--hull-3); margin-top: 6px; }
+.queue { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px; }
+.qcard { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px; background: var(--hull); border: 1px solid var(--seam); padding: 10px; align-items: start; }
+.qthumb { width: 72px; height: 72px; display: grid; place-items: center; background: repeating-conic-gradient(var(--hull-2) 0% 25%, var(--hull-3) 0% 50%) 0 0 / 12px 12px; }
+.qthumb img { max-width: 64px; max-height: 64px; }
+.qbody { display: grid; gap: 4px; min-width: 0; }
+.qbody code { font-family: var(--f-mono); font-size: 12px; overflow-wrap: anywhere; }
+.qbody .note { overflow-wrap: anywhere; }
+.qstate { font-size: 11px; justify-self: start; }
+.qstate.waiting { color: var(--signal); }
+.qstate.applied { color: var(--ok); }
+.queue-empty { color: var(--dim); font-size: 13px; margin: 0; }
+.look-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* ---- publish ---- */
+.pub { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--seam); background: var(--hull-2); }
+.pub h3, .files-title { margin: 0; font-size: 14px; font-weight: 700; }
+.pub p { margin: 0; }
+a.btn { text-decoration: none; justify-self: start; }
+.rail a:not(.btn) { color: var(--k-beam); }
+.howto summary { cursor: pointer; font-size: 12px; color: var(--dim); }
+.howto ol { margin: 8px 0; padding-left: 1.3em; font-size: 12px; color: var(--dim); display: grid; gap: 4px; }
+.howto code { color: var(--text); }
+.pub-list { font-family: var(--f-mono); font-size: 12px; color: var(--text); background: var(--void); border: 1px solid var(--seam); padding: 6px 8px; overflow-wrap: anywhere; }
+#gh-token { font-family: var(--f-mono); }
+
+/* ---- rail ---- */
+.rail { background: var(--hull); border: 1px solid var(--seam); padding: 16px; display: grid; gap: 14px; align-content: start; }
+.rail h2 { font-family: var(--f-display); font-weight: 400; font-size: 20px; margin: 0; }
+.rail p { margin: 0; font-size: 13px; color: var(--dim); }
+.ways { display: grid; gap: 8px; }
+.way { border-left: 2px solid var(--signal); padding: 2px 0 2px 10px; font-size: 13px; }
+.way b { display: block; color: var(--text); }
+.way span { color: var(--dim); }
+.files { display: grid; gap: 10px; }
+.file { border: 1px solid var(--seam); background: var(--hull-2); padding: 10px; display: grid; gap: 8px; min-width: 0; }
+.file-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; align-items: baseline; }
+.file-head code { font-family: var(--f-mono); font-size: 13px; color: var(--text); }
+.file-sub { font-size: 12px; color: var(--dim); width: 100%; }
+.diff { font-size: 12px; font-family: var(--f-mono); color: var(--dim); }
+.diff.has { color: var(--signal); }
+.file-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+pre.peek { margin: 0; max-height: 300px; overflow: auto; background: var(--void); border: 1px solid var(--seam); padding: 10px; font-family: var(--f-mono); font-size: 11px; line-height: 1.5; white-space: pre; color: var(--text); }
+.copy-note { font-size: 12px; color: var(--ok); }
+.copy-note:empty { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div>
+      <div class="brand-mark">STELLAR LEGION</div>
+      <h1>兵器と出撃</h1>
+    </div>
+    <div class="lamp" id="lamp" data-state="loading" role="status" aria-live="polite"><i></i><span id="lamp-text">読み込み中</span></div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="設定の種類">
+    <button class="tab" role="tab" id="tab-units" data-view="units" aria-selected="true">機体 <b class="badge" id="badge-units"></b></button>
+    <button class="tab" role="tab" id="tab-weapons" data-view="weapons" aria-selected="false">武装 <b class="badge" id="badge-weapons"></b></button>
+    <button class="tab" role="tab" id="tab-army" data-view="army" aria-selected="false">出撃 <b class="badge" id="badge-army"></b></button>
+    <button class="tab" role="tab" id="tab-images" data-view="images" aria-selected="false">絵 <b class="badge" id="badge-images"></b></button>
+  </nav>
+
+  <div class="layout">
+    <main id="main">
+      <div class="state" id="state">
+        <h2>読み込み中</h2>
+        <p>保存してある設定を読み込んでいます。</p>
+      </div>
+      <section class="view" id="view-units" role="tabpanel" aria-labelledby="tab-units" hidden></section>
+      <section class="view" id="view-weapons" role="tabpanel" aria-labelledby="tab-weapons" hidden></section>
+      <section class="view" id="view-army" role="tabpanel" aria-labelledby="tab-army" hidden></section>
+      <section class="view" id="view-images" role="tabpanel" aria-labelledby="tab-images" hidden>
+        <div class="view-head"><p class="lead">JPG などの画像から背景を消して、機体や戦艦の絵として取り込みます。取り込んだ絵は「このブラウザで試す」ですぐ確かめられ、「公開ゲームに反映する」でゲームの assets フォルダに入ります。絵は右を向いた形にしてください。</p></div>
+        <div class="cut">
+          <div class="bench">
+            <div class="drop" id="cut-drop"><canvas id="cut-work" width="10" height="10" aria-label="背景を透明にした画像。クリックすると、その場所とつながった同じ色の部分を消します"></canvas></div>
+            <div class="bench-bar">
+              <span class="file-btn"><button type="button" class="btn ghost small" id="cut-pick" tabindex="-1">画像を選ぶ</button><input type="file" id="cut-file" accept="image/jpeg,image/png,image/webp" aria-label="画像を選ぶ"></span>
+              <span class="seg-btn" role="group" aria-label="クリックしたときの動き">
+                <button type="button" id="cut-mode-erase" aria-pressed="true">クリックで消す</button>
+                <button type="button" id="cut-mode-pick" aria-pressed="false">クリックで背景の色を選ぶ</button>
+              </span>
+              <button type="button" class="btn ghost small" id="cut-undo" disabled>1 つ戻す</button>
+              <button type="button" class="btn ghost small" id="cut-clear" disabled>消した所を元に戻す</button>
+            </div>
+            <p class="note" id="cut-info">画像をここにドラッグするか、「画像を選ぶ」を押してください。貼り付け（Ctrl+V）でも入ります。</p>
+          </div>
+          <div class="cut-panel">
+            <div class="cut-field">
+              <label class="cut-label" for="cut-target">どの絵として取り込みますか</label>
+              <select id="cut-target"></select>
+              <div class="cut-new" id="cut-new-row" hidden>
+                <label class="cut-label" for="cut-new-id">新しい絵の ID</label>
+                <input type="text" id="cut-new-id" placeholder="az_my_unit" maxlength="40">
+                <span class="note">英数字と _ だけ。機体タブの「絵の ID」に同じ ID を書くと、その機体の絵になります。</span>
+              </div>
+            </div>
+            <div class="cut-field">
+              <span class="cut-label">ゲームでの大きさ</span>
+              <div class="cut-sizes">
+                <label class="f" for="cut-height" style="grid-template-columns:auto auto"><span class="fl">高さ<small>ドット</small></span><input type="number" id="cut-height" min="6" max="200" step="1" value="26"></label>
+                <label class="f" for="cut-maxw" style="grid-template-columns:auto auto"><span class="fl">幅の上限<small>ドット</small></span><input type="number" id="cut-maxw" min="6" max="300" step="1" value="36"></label>
+              </div>
+              <span class="note">機体の大きさ（S / M / L）は機体タブで決めます。ここは S のときの絵の大きさです。</span>
+            </div>
+            <div class="cut-field">
+              <span class="cut-label">背景の色</span>
+              <div class="cut-row"><span class="swatch" id="cut-swatch" role="img" aria-label="背景の色"></span><span class="note" id="cut-bg">外周から自動で判定</span><button type="button" class="btn ghost small" id="cut-autobg">自動に戻す</button></div>
+            </div>
+            <div class="cut-field">
+              <div class="cut-row cut-between"><label class="cut-label" for="cut-tol">背景とみなす色の幅</label><span class="val" id="cut-tol-val">48</span></div>
+              <input type="range" id="cut-tol" min="4" max="160" value="48">
+              <span class="note">大きくすると、背景に近い色まで消えます。絵が欠けるときは小さく</span>
+            </div>
+            <div class="cut-field">
+              <div class="cut-row cut-between"><label class="cut-label" for="cut-fringe">フチのにじみを削る</label><span class="val" id="cut-fringe-val">1</span></div>
+              <input type="range" id="cut-fringe" min="0" max="4" value="1">
+            </div>
+            <div class="cut-checks">
+              <label class="check"><input type="checkbox" id="cut-specks" checked> 小さなゴミを消す</label>
+              <label class="check"><input type="checkbox" id="cut-flip"> 左右を反転する（左を向いている絵を右向きにする）</label>
+              <label class="check"><input type="checkbox" id="cut-outline"> 1 ドットの黒い縁取りを付ける</label>
+            </div>
+            <div class="cut-actions">
+              <button type="button" class="btn" id="cut-import">ゲームに取り込む</button>
+              <button type="button" class="btn ghost small" id="cut-save">PNG をパソコンに保存</button>
+            </div>
+            <p class="note" id="cut-note" role="status"></p>
+          </div>
+        </div>
+        <figure class="field"><canvas id="cut-stage" width="720" height="180"></canvas><figcaption id="cut-stage-cap"></figcaption></figure>
+        <section class="view"><h2 class="sec">取り込んだ絵<small>IMAGES</small></h2><div id="cut-queue" class="queue"></div></section>
+      </section>
+    </main>
+
+    <aside class="rail" id="rail" hidden>
+      <h2>反映</h2>
+      <p>変えた値は、このブラウザに自動で保存されます。ほかの人には見えません。</p>
+      <div class="pub">
+        <h3>1. このブラウザで試す</h3>
+        <p>変えた設定のゲームを新しいタブで開きます。公開ゲームは変わりません。この遊び方ではインターネット対戦はできません。</p>
+        <a class="btn" id="try-link" href="index.html?try=1" target="_blank" rel="noopener">このブラウザで試す</a>
+        <p class="note" id="try-note" role="status"></p>
+      </div>
+      <div class="pub">
+        <h3>2. 公開ゲームに反映する</h3>
+        <p>GitHub のファイルを書き換えて、みんなが遊ぶゲームを新しくします。反映してから 1〜2 分で変わります。</p>
+        <label class="f stack" for="gh-token"><span class="fl">GitHub のトークン</span><input type="password" id="gh-token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
+        <label class="check" for="gh-remember"><input type="checkbox" id="gh-remember"> このブラウザに覚えておく</label>
+        <details class="howto"><summary>トークンの作り方</summary>
+          <ol>
+            <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub の Fine-grained token を作るページ</a>を開く</li>
+            <li>Repository access で「Only select repositories」を選び、<code id="gh-repo-name">stellar-legion</code> だけを選ぶ</li>
+            <li>Permissions の Repository permissions で「Contents」を「Read and write」にする</li>
+            <li>「Generate token」を押し、出てきたトークンを上の欄に貼る</li>
+          </ol>
+          <p class="note">トークンは GitHub に送るときだけ使い、ほかへは送りません。人に見せないでください。「覚えておく」を外すと、このタブを閉じたときに消えます。</p>
+        </details>
+        <div id="gh-action"></div>
+        <p class="note" id="gh-status" role="status" aria-live="polite"></p>
+      </div>
+      <h3 class="files-title">ファイルの中身</h3>
+      <div class="files" id="files"></div>
+    </aside>
+  </div>
+</div>
+
+<script src="tools/settings-format.js"></script>
+<script src="settings/github.js"></script>
+<script src="settings/sample.js"></script>
+<script src="settings/editor.js"></script>
+</body>
+</html>

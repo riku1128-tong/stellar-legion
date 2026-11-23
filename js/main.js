@@ -16,7 +16,16 @@
   canvas.focus();
 
   SL.Sprites.build();
-  await SL.Sprites.applyOverrides(SL.ASSET_OVERRIDES || {});
+  // お試し設定の絵（設定ページで取り込んだもの）を、表の絵より優先する
+  const overrides = Object.assign({}, SL.ASSET_OVERRIDES || {});
+  const trialImages = (SL.TRIAL && SL.TRIAL.images) || {};
+  for (const id of Object.keys(trialImages)) {
+    const im = trialImages[id];
+    if (im && typeof im.dataUrl === 'string' && im.dataUrl.indexOf('data:image/png') === 0) {
+      overrides[id] = { src: im.dataUrl, height: im.height, maxWidth: im.maxWidth };
+    }
+  }
+  await SL.Sprites.applyOverrides(overrides);
 
   const game = new SL.Game(canvas);
   SL.game = game;
