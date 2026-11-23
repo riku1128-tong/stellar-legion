@@ -93,7 +93,7 @@ SL.UNIT_TYPES = {
     weapons: ['mega_cannon', 'spread_beam', null],
   },
   cr_unit_3: {
-    name: 'PSYCO', faction: 'cr', role: 'giant', size: 'L', hp: 3310, speed: 20, energy: 1000, radius: 9, sprite: 'cr_PYSCHO',
+    name: 'PYSCHO-GUMDAM', faction: 'cr', role: 'giant', size: 'L', hp: 3310, speed: 20, energy: 1000, radius: 9, sprite: 'cr_PSYCHO',
     transform: { speed: 3, turn: 0.7, sprite: 'cr_PSYCHO2' },
     weapons: [{ id: 'mega_cannon', dmg: 155, energy: 100 }, { id: 'vulcan', dmg: 13.5, ammo: 560 }, null],
   },

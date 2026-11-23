@@ -26,6 +26,6 @@ SL.ARMY_COUNTS = {
     cr_artillery_2: 1,  // GOGG 砲撃機
     cr_giant: 1,  // ZEONG 巨大機
     cr_unit_2: 1,  // HELMES 巨大機
-    cr_unit_3: 1,  // PSYCO 巨大機
+    cr_unit_3: 1,  // PYSCHO-GUMDAM 巨大機
   },
 };
