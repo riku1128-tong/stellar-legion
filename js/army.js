@@ -5,22 +5,22 @@
 // 設定ページ（アーティファクト「STELLAR LEGION 兵器と出撃」）で値を変えて、この中身をまるごと貼り替えてもよい。
 SL.ARMY_COUNTS = {
   az: {
-    az_commander: 1,  // RX78-2 隊長機
+    az_commander: 1,  // RX-78-2 隊長機
     az_raider: 2,  // CORE-FIGHTER 遊撃機
-    az_heavy: 1,  // BASTION 重装機
-    az_grunt: 7,  // GUARD 量産機
-    az_special: 2,  // GLAIVE 格闘機
-    az_artillery: 2,  // MORTAR 砲撃機
-    az_giant: 1,  // CITADEL 巨大機
+    az_heavy: 2,  // GUN-CANON 重装機
+    az_grunt: 8,  // GIM 量産機
+    az_special: 0,  // NO ENTRY 格闘機
+    az_artillery: 2,  // GUN-TANK 砲撃機
+    az_giant: 1,  // WHITE-BASE 巨大機
   },
   cr: {
-    cr_commander: 1,  // TRIBUNE 隊長機
-    cr_raider: 2,  // WASP 遊撃機
-    cr_heavy: 1,  // JUGGERNAUT 重装機
-    cr_grunt: 7,  // LEGIONARY 量産機
-    cr_special: 2,  // STINGER 格闘機
-    cr_artillery: 2,  // HOWITZER 砲撃機
-    cr_giant: 1,  // LEVIATHAN 巨大機
+    cr_commander: 1,  // SHA 隊長機
+    cr_raider: 2,  // NO ENTRY 遊撃機
+    cr_heavy: 1,  // GYAN 重装機
+    cr_grunt: 7,  // ZAKU-II 量産機
+    cr_special: 2,  // GUFU 格闘機
+    cr_artillery: 2,  // DOM 砲撃機
+    cr_giant: 1,  // ZEONG 巨大機
     cr_unit_2: 1,  // HELMES 巨大機
   },
 };

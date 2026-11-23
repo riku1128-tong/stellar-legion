@@ -16,7 +16,7 @@
 SL.UNIT_TYPES = {
   // --- アズール連合 ---
   az_commander: {
-    name: 'RX78-2', faction: 'az', role: 'commander', size: 'S', hp: 380, speed: 120, radius: 9, sprite: 'az_commander',
+    name: 'RX-78-2', faction: 'az', role: 'commander', size: 'S', hp: 380, speed: 120, radius: 9, sprite: 'az_commander',
     weapons: ['beam_rifle', 'homing', 'saber'],
   },
   az_raider: {
@@ -24,57 +24,57 @@ SL.UNIT_TYPES = {
     weapons: ['beam_rifle', 'missile3', 'saber'],
   },
   az_heavy: {
-    name: 'BASTION', faction: 'az', role: 'heavy', size: 'S', hp: 460, speed: 85, radius: 10, sprite: 'az_heavy',
+    name: 'GUN-CANON', faction: 'az', role: 'heavy', size: 'S', hp: 460, speed: 85, radius: 10, sprite: 'az_heavy',
     weapons: ['mega_cannon', 'missile5', 'saber'],
   },
   az_grunt: {
-    name: 'GUARD', faction: 'az', role: 'grunt', size: 'S', hp: 200, speed: 105, radius: 8, sprite: 'az_grunt',
+    name: 'GIM', faction: 'az', role: 'grunt', size: 'S', hp: 200, speed: 105, radius: 8, sprite: 'az_grunt',
     weapons: ['rifle', null, 'saber'],
   },
   az_special: {
-    name: 'GLAIVE', faction: 'az', role: 'special', size: 'S', hp: 230, speed: 110, radius: 8, sprite: 'az_special',
+    name: 'NO ENTRY', faction: 'az', role: 'special', size: 'S', hp: 230, speed: 110, radius: 8, sprite: 'az_special',
     weapons: ['rifle', 'missile3', 'naginata'],
   },
   az_artillery: {
-    name: 'MORTAR', faction: 'az', role: 'artillery', size: 'S', hp: 260, speed: 75, radius: 10, sprite: 'az_artillery',
+    name: 'GUN-TANK', faction: 'az', role: 'artillery', size: 'S', hp: 260, speed: 75, radius: 10, sprite: 'az_artillery',
     weapons: ['cannon', 'beam_rifle', null],
   },
   az_giant: {
-    name: 'CITADEL', faction: 'az', role: 'giant', size: 'S', hp: 1000, speed: 50, energy: 160, radius: 22, sprite: 'az_giant',
+    name: 'WHITE-BASE', faction: 'az', role: 'giant', size: 'S', hp: 1000, speed: 50, energy: 160, radius: 22, sprite: 'az_giant',
     weapons: ['spread_beam', 'missile5', null],
   },
   // --- クリムゾン帝国 ---
   cr_commander: {
-    name: 'TRIBUNE', faction: 'cr', role: 'commander', size: 'S', hp: 360, speed: 125, radius: 9, sprite: 'cr_commander',
+    name: 'SHA', faction: 'cr', role: 'commander', size: 'S', hp: 360, speed: 250, radius: 9, sprite: 'cr_commander',
     weapons: ['beam_rifle', 'missile3', 'naginata'],
   },
   cr_raider: {
-    name: 'WASP', faction: 'cr', role: 'raider', size: 'S', hp: 250, speed: 118, radius: 8, sprite: 'cr_raider',
+    name: 'NO ENTRY', faction: 'cr', role: 'raider', size: 'S', hp: 250, speed: 118, radius: 8, sprite: 'cr_raider',
     transform: { speed: 1.7, turn: 0.7, sprite: 'cr_raider_jet' },
     weapons: ['vulcan', 'homing', 'heat_axe'],
   },
   cr_heavy: {
-    name: 'JUGGERNAUT', faction: 'cr', role: 'heavy', size: 'S', hp: 480, speed: 80, radius: 10, sprite: 'cr_heavy',
+    name: 'GYAN', faction: 'cr', role: 'heavy', size: 'S', hp: 480, speed: 80, radius: 10, sprite: 'cr_heavy',
     weapons: ['bazooka', 'missile5', 'heat_axe'],
   },
   cr_grunt: {
-    name: 'LEGIONARY', faction: 'cr', role: 'grunt', size: 'S', hp: 205, speed: 100, radius: 8, sprite: 'cr_grunt',
+    name: 'ZAKU-II', faction: 'cr', role: 'grunt', size: 'S', hp: 205, speed: 100, radius: 8, sprite: 'cr_grunt',
     weapons: ['rifle', null, 'heat_axe'],
   },
   cr_special: {
-    name: 'STINGER', faction: 'cr', role: 'special', size: 'S', hp: 230, speed: 110, radius: 8, sprite: 'cr_special',
+    name: 'GUFU', faction: 'cr', role: 'special', size: 'S', hp: 230, speed: 110, radius: 8, sprite: 'cr_special',
     weapons: ['rifle', 'missile3', 'shock_whip'],
   },
   cr_artillery: {
-    name: 'HOWITZER', faction: 'cr', role: 'artillery', size: 'S', hp: 270, speed: 72, radius: 10, sprite: 'cr_artillery',
+    name: 'DOM', faction: 'cr', role: 'artillery', size: 'S', hp: 270, speed: 72, radius: 10, sprite: 'cr_artillery',
     weapons: ['cannon', 'beam_rifle', null],
   },
   cr_giant: {
-    name: 'LEVIATHAN', faction: 'cr', role: 'giant', size: 'L', hp: 980, speed: 52, energy: 160, radius: 22, sprite: 'cr_giant',
+    name: 'ZEONG', faction: 'cr', role: 'giant', size: 'L', hp: 980, speed: 52, energy: 160, radius: 22, sprite: 'cr_giant',
     weapons: ['mega_cannon', 'homing', null],
   },
   cr_unit_2: {
-    name: 'HELMES', faction: 'cr', role: 'giant', size: 'L', hp: 205, speed: 100, radius: 8, sprite: 'cr_grunt',
+    name: 'HELMES', faction: 'cr', role: 'giant', size: 'L', hp: 1005, speed: 60, energy: 160, radius: 22, sprite: 'cr_HELMES',
     weapons: ['mega_cannon', 'spread_beam', null],
   },
 };
