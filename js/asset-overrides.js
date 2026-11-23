@@ -49,4 +49,6 @@ SL.ASSET_OVERRIDES = {
   cr_ZGOCK: { src: 'assets/cr_ZGOCK.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
   cr_SHA_ZAKUII: { src: 'assets/cr_SHA_ZAKUII.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
   cr_SHA_ZGOCK: { src: 'assets/cr_SHA_ZGOCK.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_PSYCHO2: { src: 'assets/cr_PSYCHO2.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_PSYCHO: { src: 'assets/cr_PSYCHO.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
 };
