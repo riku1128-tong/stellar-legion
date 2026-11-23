@@ -9,7 +9,7 @@ SL.ARMY_COUNTS = {
     az_raider: 2,  // CORE-FIGHTER 遊撃機
     az_raider_2: 2,  // BALL 遊撃機
     az_heavy: 2,  // GUN-CANON 重装機
-    az_grunt: 11,  // GIM 量産機
+    az_grunt: 21,  // GIM 量産機
     az_artillery: 2,  // GUN-TANK 砲撃機
   },
   cr: {
