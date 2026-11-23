@@ -5,6 +5,24 @@
   const U = SL.util;
   const C = SL.CONFIG;
 
+  // 機体の大きさ（S / M / L）から、絵を描く倍率を決める
+  //  S は 1。M / L は絵の長い辺を、自軍の戦艦の絵の長い辺 × 1 / × 2 にそろえる
+  function sizeScale(size, team, spriteId) {
+    const z = SL.SIZES[size];
+    if (!z || !z.box) return 1;
+    const ship = SL.Sprites.get(SL.SHIPS[team].sprite);
+    const spr = SL.Sprites.get(spriteId);
+    return (z.box * Math.max(ship.w, ship.h)) / Math.max(1, spr.w, spr.h);
+  }
+  SL.sizeScale = sizeScale;
+
+  // 大きな機体の格闘武器：届く距離と刃の絵を k 倍にする
+  function scaleMelee(d, k) {
+    const out = Object.assign({}, d, { reach: d.reach * k });
+    if (d.blade) out.blade = Object.assign({}, d.blade, { len: d.blade.len * k, pole: d.blade.pole ? d.blade.pole * k : d.blade.pole });
+    return out;
+  }
+
   class Unit {
     constructor(typeId, team, slot) {
       const t = SL.UNIT_TYPES[typeId];
@@ -16,7 +34,10 @@
       this.id = 0;               // World.units の中の番号
       this.name = t.name;
       this.role = t.role;
-      this.radius = t.radius;
+      this.size = t.size || 'S';
+      // M / L は絵を大きくし、当たり判定と格闘の届く距離も同じ割合で大きくする
+      this.sizeK = sizeScale(this.size, team, t.sprite);
+      this.radius = t.radius * this.sizeK;
       this.x = 0; this.y = 0;
       this.vx = 0; this.vy = 0;  // 実際の速度（移動 + ノックバック）
       this.heading = team === 0 ? 0 : Math.PI; // 進んでいる向き
@@ -39,10 +60,10 @@
       this.stun = 0;             // しびれている残り秒数
       this.stunImmune = 0;       // しびれが解けたあと、しびれない残り秒数
       this.docked = false;       // 戦艦の中にいる
-      this.weapons = t.weapons.map((id) => {
-        if (!id) return null;
-        const def = SL.WEAPONS[id];
-        return { id, def, ammo: def.ammo || 0, cd: 0, charge: 0, refill: 0 };
+      this.weapons = t.slots.map((s) => {
+        if (!s) return null;
+        const def = s.def.kind === 'melee' && this.sizeK !== 1 ? scaleMelee(s.def, this.sizeK) : s.def;
+        return { id: s.id, def, ammo: def.ammo || 0, cd: 0, charge: 0, refill: 0 };
       });
       this.target = null;
       this.controller = -1;      // 操作しているプレイヤー番号（-1 = AI）
@@ -63,6 +84,10 @@
     }
 
     get hpRatio() { return this.hp / this.maxHp; }
+    // 絵を描く倍率（S は 1。M / L は絵の長い辺を戦艦の絵の長い辺 × 1 / × 2 にそろえる）
+    get drawScale() { return sizeScale(this.size, this.team, this.sprite); }
+    // 大きな機体（爆発や揺れを大きくする）
+    get isBig() { return this.role === 'giant' || this.size !== 'S'; }
     get sprite() { return this.mode === 'move' && this.type.transform ? this.type.transform.sprite : this.type.sprite; }
     get baseSpeed() { return this.type.speed * (this.mode === 'move' && this.type.transform ? this.type.transform.speed : 1); }
     get targetable() { return this.alive && !this.docked; }
@@ -128,15 +153,17 @@
       return r;
     }
 
-    spawnArmies() {
+    // countsByFaction: { az: {役割: 体数}, cr: {...} }（省略すると js/army.js の設定）
+    spawnArmies(countsByFaction) {
       for (let team = 0; team < 2; team++) {
         const prefix = SL.FACTIONS[team].prefix;
         const dir = team === 0 ? 1 : -1;
         const sp = C.SPAWN[team];
-        SL.ARMY.forEach((slotDef, i) => {
-          const u = new Unit(prefix + '_' + slotDef.role, team, i);
-          u.x = sp.x + slotDef.fx * dir * 1.3;
-          u.y = sp.y + slotDef.fy * 1.3;
+        SL.armyFor(team, countsByFaction).forEach((slotDef, i) => {
+          const u = new Unit(slotDef.type, team, i);
+          const k = SL.FORMATION_SCALE;
+          u.x = U.clamp(sp.x + slotDef.fx * dir * k, 60, C.FIELD_W - 60);
+          u.y = U.clamp(sp.y + slotDef.fy * k, 60, C.FIELD_H - 60);
           u.home = { x: sp.x, y: u.y };
           u.facing = dir;
           u.id = this.units.length;
@@ -531,12 +558,13 @@
       e.lunge = 0;
       e.docked = false;
       if (killer) killer.kills++;
-      this.fx.ghost(e.sprite, e.x, e.y, e.facing);
+      this.fx.ghost(e.sprite, e.x, e.y, e.facing, e.isShip ? 1 : e.drawScale);
       this.fx.explosion(e.x, e.y, Math.round(e.radius * 1.4));
-      if (e.role === 'giant') {
-        for (let i = 0; i < 3; i++) this.fx.explosion(e.x + U.rand(-20, 20), e.y + U.rand(-12, 12), 14);
+      if (e.isBig) {
+        const k = Math.min(3, Math.max(1, e.sizeK || 1));
+        for (let i = 0; i < 3; i++) this.fx.explosion(e.x + U.rand(-20, 20) * k, e.y + U.rand(-12, 12) * k, Math.round(14 * k));
       }
-      this.sound(e.role === 'giant' ? 'bigExplode' : 'explode', e.x, e.y);
+      this.sound(e.isBig ? 'bigExplode' : 'explode', e.x, e.y);
       for (const u of this.units) {
         if (u.target === e) u.target = null;
         if (u.lastHitBy === e) u.lastHitBy = null;
@@ -800,13 +828,14 @@
 
     drawUnit(ctx, u, time) {
       const spr = SL.Sprites.get(u.sprite);
+      const ds = u.drawScale;
       if (u.docked) ctx.globalAlpha = 0.35;
       // バーニアの炎（進んでいる向きの反対側）
       if (u.speed > 25 && !u.docked) {
         const hx = Math.cos(u.heading), hy = Math.sin(u.heading);
-        const back = spr.w / 2 - 1;
+        const back = (spr.w * ds) / 2 - 1;
         const fx = u.x - hx * back, fy = u.y - hy * back * 0.6 + 1;
-        const big = (u.role === 'giant' ? 2 : 1) * (u.boosting ? 1.6 : 1);
+        const big = (u.size === 'L' ? 4 : u.size === 'M' ? 3 : u.role === 'giant' ? 2 : 1) * (u.boosting ? 1.6 : 1);
         const flick = ((time * 30 + u.slot) | 0) % 2;
         const len = (2 + flick) * big;
         ctx.fillStyle = u.boosting ? '#bff6ff' : '#ffd23a';
@@ -814,7 +843,7 @@
         ctx.fillStyle = '#ff7a2a';
         ctx.fillRect(Math.round(fx - hx * len - big / 2), Math.round(fy - hy * len - big / 2), Math.ceil(big), Math.ceil(big));
       }
-      SL.Sprites.draw(ctx, u.sprite, u.x, u.y, u.facing, u.flash > 0 ? 'flash' : null);
+      SL.Sprites.draw(ctx, u.sprite, u.x, u.y, u.facing, u.flash > 0 ? 'flash' : null, ds);
       ctx.globalAlpha = 1;
 
       if (u.lunge > 0 && u.lungeDef) this.drawMelee(ctx, u);

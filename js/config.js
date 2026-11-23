@@ -48,6 +48,9 @@ window.SL = window.SL || {};
     // --- インターネット対戦 ---
     NET_SNAPSHOT_HZ: 20,              // 部屋を作った側が状態を送る回数（1 秒あたり）
     NET_ROOM_PREFIX: 'stellar-legion-room-',
+    // タイトル画面の SETTINGS で開く設定ページ（claude.ai のアーティファクト。持ち主だけが開ける）
+    //  空にすると SETTINGS はメニューに出ない
+    SETTINGS_URL: 'https://claude.ai/artifact/YTenoqEiZoGtxv3XoME23k',
   };
 
   SL.DEBUG = {

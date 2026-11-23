@@ -275,11 +275,11 @@ SL.Sprites = (function () {
     SL.FACTIONS.forEach((faction, team) => {
       const prefix = faction.prefix;
       const palette = Object.assign({ red: '#d23a3a' }, faction.palette);
-      for (const typeId in SL.UNIT_TYPES) {
-        if (!typeId.startsWith(prefix + '_')) continue;
+      // 同じ絵の ID を使う機体が何体あっても、仮の図形は最初の機体の役割で作る
+      for (const typeId of SL.typesOf(prefix)) {
         const t = SL.UNIT_TYPES[typeId];
-        store[t.sprite] = makeEntry(buildPlaceholder(shapeFor(t.role, prefix), palette, prefix), false);
-        if (t.transform) store[t.transform.sprite] = makeEntry(buildPlaceholder(SHAPES.jet, palette, prefix), false);
+        if (!store[t.sprite]) store[t.sprite] = makeEntry(buildPlaceholder(shapeFor(t.role, prefix), palette, prefix), false);
+        if (t.transform && !store[t.transform.sprite]) store[t.transform.sprite] = makeEntry(buildPlaceholder(SHAPES.jet, palette, prefix), false);
       }
       const ship = SL.SHIPS[team];
       store[ship.sprite] = makeEntry(buildPlaceholder(SHAPES['ship_' + prefix], palette, prefix), false);

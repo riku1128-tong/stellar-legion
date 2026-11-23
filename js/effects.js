@@ -101,9 +101,9 @@
     }
 
     // 撃墜された機体の黄色いシルエットが広がって消える
-    ghost(spriteId, x, y, facing) {
-      this.record('ghost', [spriteId, x, y, facing]);
-      this.add({ t: 'ghost', id: spriteId, x, y, facing, life: 0.5, max: 0.5 });
+    ghost(spriteId, x, y, facing, scale) {
+      this.record('ghost', [spriteId, x, y, facing, scale || 1]);
+      this.add({ t: 'ghost', id: spriteId, x, y, facing, scale: scale || 1, life: 0.5, max: 0.5 });
     }
 
     slash(x, y, angle, color, radius) {
@@ -177,7 +177,7 @@
             break;
           case 'ghost':
             ctx.globalAlpha = k;
-            SL.Sprites.draw(ctx, p.id, p.x, p.y, p.facing, 'gold', 1 + (1 - k) * 0.5);
+            SL.Sprites.draw(ctx, p.id, p.x, p.y, p.facing, 'gold', (p.scale || 1) * (1 + (1 - k) * 0.5));
             break;
           case 'whip': {
             ctx.globalAlpha = Math.min(1, k * 2);

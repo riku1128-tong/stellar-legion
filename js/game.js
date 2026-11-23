@@ -26,7 +26,7 @@
       this.stateTime = 0;
       this.time = 0;
       this.menuIndex = 0;
-      this.menuItems = ['1P VS CPU', '1P VS 2P', 'ONLINE'];
+      this.menuItems = ['1P VS CPU', '1P VS 2P', 'ONLINE'].concat(C.SETTINGS_URL ? ['SETTINGS'] : []);
       this.mode = 'cpu';          // 'cpu' | '2p' | 'demo' | 'online'
       this.localPi = 0;           // この画面で操作しているプレイヤー（オンラインで参加した側は 1）
       this.world = null;
@@ -99,7 +99,9 @@
         onShipDestroyed: (s, k) => this.onShipDestroyed(s, k),
         sound: (n, x, y, v) => this.sfx(n, x, y, v),
       });
-      this.world.spawnArmies();
+      // 出撃の設定（js/army.js）をこの試合のぶんだけ写しておく（オンラインでは相手にも送る）
+      this.armyCounts = JSON.parse(JSON.stringify(SL.ARMY_COUNTS || {}));
+      this.world.spawnArmies(this.armyCounts);
       if (mode === 'online') this.world.startRecording();
       this.timer = C.TIME_START;
       this.tickAcc = 0;
@@ -111,7 +113,7 @@
       this.makePlayers(humans, labels);
       const views = this.views();
       for (const p of this.players) {
-        const cmd = this.world.units.find((u) => u.team === p.team && u.role === 'commander');
+        const cmd = this.firstUnit(p.team);
         this.assign(p, cmd);
         const v = views.find((vv) => vv.pi === p.index) || views[0];
         p.cam.x = cmd.x - v.w / 2;
@@ -121,16 +123,24 @@
       SL.Audio.play('select');
     }
 
+    // 最初に操作する機体：隊長機（いなければ編成の先頭）
+    firstUnit(team) {
+      const mine = this.world.units.filter((u) => u.team === team);
+      return mine.find((u) => u.role === 'commander') || mine[0];
+    }
+
     // オンラインで参加した側：表示用の戦場を用意する（計算はしない）
-    setupMirror(mid) {
+    //  arm: 部屋を作った側の出撃の設定（機体の並びを相手とそろえるため）
+    setupMirror(mid, arm) {
       this.matchId = mid;
       this.mode = 'online';
       this.localPi = 1;
+      this.armyCounts = arm || JSON.parse(JSON.stringify(SL.ARMY_COUNTS || {}));
       this.world = new SL.World({});
-      this.world.spawnArmies();
+      this.world.spawnArmies(this.armyCounts);
       this.makePlayers([true, true], ['1P', '2P']);
       for (const p of this.players) {
-        const cmd = this.world.units.find((u) => u.team === p.team && u.role === 'commander');
+        const cmd = this.firstUnit(p.team);
         p.unit = cmd;
         p.cam.x = cmd.x - C.W / 2;
         p.cam.y = cmd.y - C.H / 2;
@@ -204,7 +214,7 @@
           p.shake = 6;
         } else if (p.unit && p.unit.alive) {
           const d = Math.hypot(p.unit.x - u.x, p.unit.y - u.y);
-          if (d < 200) p.shake = Math.max(p.shake, (u.role === 'giant' ? 5 : 2.5) * (1 - d / 200));
+          if (d < 200) p.shake = Math.max(p.shake, (u.isBig ? 5 : 2.5) * (1 - d / 200));
         }
       }
     }
@@ -266,7 +276,11 @@
       if (g.down) { this.menuIndex = (this.menuIndex + 1) % n; SL.Audio.play('select'); }
       if (g.confirm && this.stateTime > 0.2) {
         SL.Audio.ensure();
-        if (this.menuIndex === 2) {
+        if (this.menuItems[this.menuIndex] === 'SETTINGS') {
+          // 設定ページ（機体・武装・出撃・絵）へ移る。同じタブで開く（新しいタブはポップアップとして止められることがある）
+          SL.Audio.play('select');
+          location.href = C.SETTINGS_URL;
+        } else if (this.menuIndex === 2) {
           this.lobby = { menu: 0, code: '', status: '', msg: SL.Net.available() ? '' : 'ONLINE IS NOT AVAILABLE (PEERJS NOT LOADED)' };
           this.setState('online');
         } else {
@@ -686,7 +700,7 @@
 
       this.menuItems.forEach((label, i) => {
         const sel = i === this.menuIndex;
-        const y = 104 + i * 20;
+        const y = 98 + i * 19;
         F.draw(ctx, label, C.W / 2, y, { align: 'center', scale: 2, color: sel ? '#ffffff' : '#5a6488', shadow: '#000' });
         if (sel && this.blink(3)) {
           F.draw(ctx, '>', C.W / 2 - 70, y, { scale: 2, color: '#ff4545' });
@@ -705,11 +719,15 @@
         F.draw(ctx, text, 46, y, { color: '#c0c8e8' });
       });
       F.draw(ctx, 'ESC/P: PAUSE   M: SOUND ON/OFF   (N = NUMPAD)', C.W / 2, 226, { align: 'center', color: '#7a84a8' });
+      if (this.menuItems[this.menuIndex] === 'SETTINGS') {
+        F.draw(ctx, 'UNITS, WEAPONS, ARMY AND IMAGES. OPENS THE SETTINGS PAGE ON CLAUDE.AI', C.W / 2, 172, { align: 'center', color: '#ffd23a' });
+      }
       F.draw(ctx, 'RETURN TO YOUR BATTLESHIP TO REPAIR. DESTROY THE ENEMY SHIP FOR A BONUS.', C.W / 2, 240, { align: 'center', color: '#4be06a' });
       const pads = SL.Input.padCount();
       F.draw(ctx, 'GAMEPADS: ' + pads, C.W / 2, 256, { align: 'center', color: pads ? '#4be06a' : '#5a6488' });
       if (this.blink(2)) F.draw(ctx, 'PRESS J / ENTER / A', C.W / 2, 290, { align: 'center', scale: 2, color: '#ffffff' });
-      F.draw(ctx, 'AZURE UNION  VS  CRIMSON EMPIRE  -  16 UNITS + 1 BATTLESHIP EACH', C.W / 2, 340, { align: 'center', color: '#5a6488' });
+      const na = SL.armyFor(0).length, nc = SL.armyFor(1).length;
+      F.draw(ctx, 'AZURE UNION ' + na + '  VS  ' + nc + ' CRIMSON EMPIRE  -  + 1 BATTLESHIP EACH', C.W / 2, 340, { align: 'center', color: '#5a6488' });
     }
 
     renderLobby(ctx) {
@@ -753,18 +771,27 @@
       this.bg.draw(ctx, 0, 0, C.W, C.H, this.time);
       ctx.fillStyle = '#2a6a8a';
       ctx.fillRect(C.W / 2, 0, 1, C.H);
-      const S = 0.6;
       const anchors = [{ x: 240, y: 190 }, { x: 400, y: 190 }];
       for (let team = 0; team < 2; team++) {
         const dir = team === 0 ? 1 : -1;
         const fac = SL.FACTIONS[team];
         SL.Sprites.draw(ctx, SL.SHIPS[team].sprite, team === 0 ? 50 : C.W - 50, 190, dir);
-        SL.ARMY.forEach((s) => {
-          const type = SL.UNIT_TYPES[fac.prefix + '_' + s.role];
-          const x = anchors[team].x + s.fx * dir * S;
-          const y = anchors[team].y + s.fy * S;
-          SL.Sprites.draw(ctx, type.sprite, x, y, dir);
-          if (s.role === 'commander' && this.players[team]) {
+        const army = SL.armyFor(team, this.armyCounts);
+        // 体数が多くても画面に収まるように縮める
+        const minFx = Math.min(-1, ...army.map((s) => s.fx));
+        const maxFx = Math.max(1, ...army.map((s) => s.fx));
+        const SX = Math.min(0.6, 135 / -minFx, 60 / maxFx);
+        const SY = {}; // 縦は役割ごとに縮める（列の間隔が広い役割だけ詰める）
+        for (const s of army) SY[s.role] = Math.min(SY[s.role] || 0.6, 130 / Math.max(1, Math.abs(s.fy)));
+        const leadIndex = Math.max(0, army.findIndex((s) => s.role === 'commander'));
+        army.forEach((s, i) => {
+          const type = SL.UNIT_TYPES[s.type];
+          const x = anchors[team].x + s.fx * dir * SX;
+          const y = anchors[team].y + s.fy * SY[s.role];
+          // M / L の機体は、ここでは半分くらいに縮めて見せる
+          const k = SL.sizeScale(type.size, team, type.sprite);
+          SL.Sprites.draw(ctx, type.sprite, x, y, dir, null, k > 1 ? Math.max(1, k * 0.6) : 1);
+          if (i === leadIndex && this.players[team]) {
             this.drawTag(ctx, x, y - 16, this.players[team].label, C.PLAYER_TAG_COLORS[team]);
           }
         });
@@ -825,7 +852,7 @@
       for (const q of this.players) {
         if (q.unit && q.unit.alive) {
           const spr = SL.Sprites.get(q.unit.sprite);
-          this.drawTag(ctx, q.unit.x, q.unit.y - spr.h / 2 - 8, q.label, C.PLAYER_TAG_COLORS[q.index]);
+          this.drawTag(ctx, q.unit.x, q.unit.y - (spr.h * q.unit.drawScale) / 2 - 8, q.label, C.PLAYER_TAG_COLORS[q.index]);
         }
       }
       ctx.restore();

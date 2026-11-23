@@ -148,6 +148,7 @@ SL.Net = (function () {
     return {
       t: 's',
       mid: game.matchId,
+      arm: game.armyCounts,
       st: game.state,
       tm: game.timer,
       res: game.result,
@@ -167,7 +168,7 @@ SL.Net = (function () {
 
   // 参加した側：届いた状態を画面に反映する
   function apply(game, s) {
-    if (!game.world || game.matchId !== s.mid) game.setupMirror(s.mid);
+    if (!game.world || game.matchId !== s.mid) game.setupMirror(s.mid, s.arm);
     const w = game.world;
 
     s.u.forEach((a, i) => {
@@ -193,7 +194,9 @@ SL.Net = (function () {
       u.stun = a[8] / 10;
       if (f & 32) {
         const ang = a[9] / 100;
-        const def = a[11] >= 0 ? SL.WEAPONS[WIDS[a[11]]] : null;
+        // 機体が持っている格闘武器（大きな機体は届く距離が伸びている）を使う
+        const own = a[11] >= 0 ? u.weapons.find((x) => x && x.id === WIDS[a[11]]) : null;
+        const def = own ? own.def : a[11] >= 0 ? SL.WEAPONS[WIDS[a[11]]] : null;
         u.lungeDef = def && def.kind === 'melee' ? def : f & 64 ? SL.WEAPONS.naginata : SL.WEAPONS.saber;
         u.lunge = a[12] ? a[12] / 1000 : 0.1;
         u.lungeDir = { x: Math.cos(ang), y: Math.sin(ang) };

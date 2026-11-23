@@ -46,10 +46,13 @@ SL.HUD = (function () {
       F.draw(ctx, p.label, lx, 1, { align, color: tagColor(p) });
       F.draw(ctx, String(n), lx, 10, { align, color: '#ffffff' });
 
-      // 生き残っている機体のアイコン（隊長機が中央寄り）
+      // 生き残っている機体のアイコン（隊長機が中央寄り）。数が多いときは詰めて並べる
       const units = world.units.filter((u) => u.team === team && u.alive).sort((a, b) => a.slot - b.slot);
-      let x = team === 0 ? cx - 46 - ICON : cx + 46;
-      for (const u of units) {
+      const room = cx - 46 - ICON - 4;
+      const gap = units.length > 1 ? Math.min(step, room / (units.length - 1)) : step;
+      const x0 = team === 0 ? cx - 46 - ICON : cx + 46;
+      units.forEach((u, i) => {
+        const x = x0 + Math.round(i * gap) * (team === 0 ? -1 : 1);
         SL.Sprites.drawIcon(ctx, u.sprite, x, 1);
         bar(ctx, x, ICON + 2, ICON, 2, u.hpRatio, hpColor(u.hpRatio));
         if (u.leader >= 0 && ((game.time * 4) | 0) % 2 === 0) {
@@ -57,8 +60,7 @@ SL.HUD = (function () {
           ctx.lineWidth = 1;
           ctx.strokeRect(x - 0.5, 0.5, ICON + 1, ICON + 1);
         }
-        x += team === 0 ? -step : step;
-      }
+      });
 
       // 戦艦の HP
       const s = world.ships[team];
@@ -203,7 +205,7 @@ SL.HUD = (function () {
     for (const u of world.units) {
       if (!u.alive) continue;
       const x = Math.round(mx + u.x * sx), y = Math.round(my + u.y * sy);
-      const size = u.role === 'giant' ? 3 : 2;
+      const size = u.size === 'L' ? 5 : u.size === 'M' ? 4 : u.role === 'giant' ? 3 : 2;
       ctx.fillStyle = SL.FACTIONS[u.team].color;
       if (u.leader >= 0) {
         ctx.fillStyle = blink ? '#ffffff' : C.PLAYER_TAG_COLORS[u.leader];
