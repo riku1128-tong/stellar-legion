@@ -22,23 +22,23 @@
 //   az_grunt: { src: 'assets/my_grunt.png', height: 32, maxWidth: 40, facing: 'left' },
 SL.ASSET_OVERRIDES = {
   // ---- アズール連合 ----
-  az_commander:  { src: 'assets/az_commander.png', height: 30, maxWidth: 40 },  // 隊長機 VANGUARD
-  az_raider:     { src: 'assets/az_raider.png', height: 27, maxWidth: 40 },  // 変形機 FALCON（戦闘モード）
+  az_commander:  { src: 'assets/az_commander.png', height: 46, maxWidth: 64 },  // 隊長機 VANGUARD
+  az_raider:     { src: 'assets/az_raider.png', height: 46, maxWidth: 64 },  // 変形機 FALCON（戦闘モード）
   az_raider_jet: { src: 'assets/az_raider_jet.png', height: 15, maxWidth: 40 },  // 変形機 FALCON（移動モード）
-  az_heavy:      { src: 'assets/az_heavy.png', height: 30, maxWidth: 40 },  // 重装機 BASTION
-  az_grunt:      { src: 'assets/az_grunt.png', height: 26, maxWidth: 36 },  // 量産機 GUARD
+  az_heavy:      { src: 'assets/az_heavy.png', height: 46, maxWidth: 64 },  // 重装機 BASTION
+  az_grunt:      { src: 'assets/az_grunt.png', height: 46, maxWidth: 64 },  // 量産機 GUARD
   az_special:    { src: 'assets/az_special.png',    height: 28, maxWidth: 40 },  // 格闘機 GLAIVE
-  az_artillery:  { src: 'assets/az_artillery.png', height: 23, maxWidth: 40 },  // 砲撃機 MORTAR
+  az_artillery:  { src: 'assets/az_artillery.png', height: 46, maxWidth: 64 },  // 砲撃機 MORTAR
   az_giant:      { src: 'assets/az_giant.png', height: 46, maxWidth: 64 },  // 巨大機 CITADEL
-  az_ship:       { src: 'assets/az_ship.png', height: 29, maxWidth: 96 },  // 戦艦 AURORA
+  az_ship:       { src: 'assets/az_ship.png', height: 40, maxWidth: 96 },  // 戦艦 AURORA
   // ---- クリムゾン帝国 ----
-  cr_commander:  { src: 'assets/cr_commander.png', height: 30, maxWidth: 40 },  // 隊長機 TRIBUNE
+  cr_commander:  { src: 'assets/cr_commander.png', height: 46, maxWidth: 64 },  // 隊長機 TRIBUNE
   cr_raider:     { src: 'assets/cr_raider.png',     height: 27, maxWidth: 40 },  // 変形機 WASP（戦闘モード）
   cr_raider_jet: { src: 'assets/cr_raider_jet.png', height: 15, maxWidth: 40 },  // 変形機 WASP（移動モード）
-  cr_heavy:      { src: 'assets/cr_heavy.png', height: 30, maxWidth: 40 },  // 重装機 JUGGERNAUT
-  cr_grunt:      { src: 'assets/cr_grunt.png', height: 26, maxWidth: 36 },  // 量産機 LEGIONARY
-  cr_special:    { src: 'assets/cr_special.png', height: 28, maxWidth: 40 },  // 格闘機 STINGER
-  cr_artillery:  { src: 'assets/cr_artillery.png', height: 25, maxWidth: 40 },  // 砲撃機 HOWITZER
+  cr_heavy:      { src: 'assets/cr_heavy.png', height: 46, maxWidth: 64 },  // 重装機 JUGGERNAUT
+  cr_grunt:      { src: 'assets/cr_grunt.png', height: 46, maxWidth: 64 },  // 量産機 LEGIONARY
+  cr_special:    { src: 'assets/cr_special.png', height: 46, maxWidth: 64 },  // 格闘機 STINGER
+  cr_artillery:  { src: 'assets/cr_artillery.png', height: 46, maxWidth: 64 },  // 砲撃機 HOWITZER
   cr_giant:      { src: 'assets/cr_giant.png', height: 44, maxWidth: 64 },  // 巨大機 LEVIATHAN
   cr_ship:       { src: 'assets/cr_ship.png', height: 40, maxWidth: 96 },  // 戦艦 BEHEMOTH
   cr_HELMES: { src: 'assets/cr_HELMES.png', height: 40, maxWidth: 96 },  // 設定ページで取り込んだ絵

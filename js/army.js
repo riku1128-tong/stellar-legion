@@ -21,7 +21,7 @@ SL.ARMY_COUNTS = {
     cr_commander_4: 1,  // ZGOK 量産機
     cr_raider: 0,  // NO ENTRY 遊撃機
     cr_heavy: 1,  // GYAN 重装機
-    cr_heavy_2: 1,  // GYAN II 重装機
+    cr_heavy_2: 1,  // AGGAI 重装機
     cr_grunt: 7,  // ZAKU-II 量産機
     cr_grunt_2: 1,  // GELGOOG 格闘機
     cr_special: 1,  // GUFU 格闘機

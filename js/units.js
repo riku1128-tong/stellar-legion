@@ -74,7 +74,7 @@ SL.UNIT_TYPES = {
     weapons: ['bazooka', 'missile5', 'heat_axe'],
   },
   cr_heavy_2: {
-    name: 'GYAN II', faction: 'cr', role: 'heavy', size: 'S', hp: 480, speed: 80, radius: 10, sprite: 'cr_AGGAI',
+    name: 'AGGAI', faction: 'cr', role: 'heavy', size: 'S', hp: 480, speed: 80, radius: 10, sprite: 'cr_AGGAI',
     weapons: ['bazooka', 'missile5', 'heat_axe'],
   },
   cr_grunt: {
