@@ -26,6 +26,9 @@ SL.FACTIONS = [
 //  missile の turn: 0 ならまっすぐ飛ぶ、0 より大きいと目標を追う（値が大きいほどよく曲がる）
 //  charge の charge: 撃てるまでにボタンを押し続ける秒数。離すと発射
 //  melee の style: slash（突進して斬る）/ spin（突進しながら回転して周りを斬る）/ whip（遠くまで伸びて当たった敵をしびれさせる）
+//  melee の reach: 機体の中心から刃先までの距離（当たり判定。絵の刃もこの長さで描く）
+//         arc: slash が振り抜く角度の半分（ラジアン）。この範囲にいる敵に当たる
+//         blade: 刃の見た目（len: 刃の長さ, color: 'beam' なら勢力のビームの色, head: 'axe' なら斧の形, pole: 柄の長さ）
 SL.WEAPONS = {
   // --- 実弾 ---
   rifle:       { name: 'MACHINE RIFLE',  short: 'RIFL', kind: 'bullet',  dmg: 7,   speed: 340, cooldown: 0.30, ammo: 60,  range: 280, spread: 0.06, r: 2 },
@@ -40,9 +43,12 @@ SL.WEAPONS = {
   spread_beam: { name: 'SPREAD BEAM',    short: 'SPRD', kind: 'beam',    dmg: 11,  speed: 380, cooldown: 1.6,  energy: 30, range: 360, spread: 0.02, count: 5, arc: 0.5, len: 14, w: 3 },
   mega_cannon: { name: 'MEGA BEAM CANNON', short: 'MEGA', kind: 'charge', dmg: 55, cooldown: 1.0,  energy: 55, charge: 1.4, range: 460, width: 9, dur: 0.4 },
   // --- 格闘 ---
-  saber:       { name: 'BEAM SABER',     short: 'SABR', kind: 'melee', style: 'slash', dmg: 34, cooldown: 0.75, reach: 16, lunge: 230, lungeTime: 0.22 },
-  heat_axe:    { name: 'HEAT AXE',       short: 'AXE',  kind: 'melee', style: 'slash', dmg: 36, cooldown: 0.85, reach: 17, lunge: 210, lungeTime: 0.24 },
-  naginata:    { name: 'NAGINATA',       short: 'NAGI', kind: 'melee', style: 'spin',  dmg: 28, cooldown: 1.1,  reach: 26, lunge: 150, lungeTime: 0.32 },
+  saber:       { name: 'BEAM SABER',     short: 'SABR', kind: 'melee', style: 'slash', dmg: 32, cooldown: 0.75, reach: 36, arc: 1.35, lunge: 230, lungeTime: 0.24,
+                 blade: { len: 28, color: 'beam' } },
+  heat_axe:    { name: 'HEAT AXE',       short: 'AXE',  kind: 'melee', style: 'slash', dmg: 38, cooldown: 0.85, reach: 36, arc: 1.35, lunge: 210, lungeTime: 0.24,
+                 blade: { len: 26, color: '#ff9a3a', head: 'axe' } },
+  naginata:    { name: 'NAGINATA',       short: 'NAGI', kind: 'melee', style: 'spin',  dmg: 28, cooldown: 1.1,  reach: 46, lunge: 140, lungeTime: 0.36,
+                 blade: { len: 12, color: 'beam', pole: 32 } },
   shock_whip:  { name: 'SHOCK WHIP',     short: 'WHIP', kind: 'melee', style: 'whip',  dmg: 12, cooldown: 2.4,  reach: 48, stun: 0.8 },
 };
 

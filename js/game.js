@@ -582,6 +582,7 @@
           u.x += (u.nx - u.x) * k;
           u.y += (u.ny - u.y) * k;
           if (u.flash > 0) u.flash -= dt;
+          if (u.lunge > 0) u.lunge = Math.max(0.001, u.lunge - dt); // 次の状態が届くまで振りを進めて見せる
         }
         for (const p of w.projectiles) { p.x += p.vx * dt; p.y += p.vy * dt; }
         for (let i = w.lasers.length - 1; i >= 0; i--) {

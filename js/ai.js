@@ -113,7 +113,8 @@ SL.AI = (function () {
         my = ny;
         it.dash = dist > 60 && u.boost > 0.2;
         const d = w.def;
-        const reach = d.style === 'whip' ? d.reach + u.radius + t.radius : d.lunge * d.lungeTime + u.radius + t.radius;
+        // 届く距離：ムチは伸びる長さ、それ以外は踏み込む距離 + 刃先までの距離
+        const reach = d.style === 'whip' ? d.reach + u.radius + t.radius : d.lunge * d.lungeTime * 0.8 + d.reach + t.radius;
         if (dist < reach && w.cd <= 0) {
           it.melee = true;
           ai.mode = 'engage';

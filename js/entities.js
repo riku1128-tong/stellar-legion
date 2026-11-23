@@ -248,7 +248,7 @@
       const base = u.baseSpeed;
       if (u.lunge > 0) {
         u.lunge -= dt;
-        const sp = u.lungeDef.lunge;
+        const sp = u.lungeStop ? 20 : u.lungeDef.lunge; // 当たったら踏み込みを止めて、振り抜きだけ続ける
         u.vx = u.lungeDir.x * sp + u.kvx;
         u.vy = u.lungeDir.y * sp + u.kvy;
         this.meleeCheck(u);
@@ -430,6 +430,8 @@
       u.lunge = d.lungeTime;
       u.lungeDir = { x: dx, y: dy };
       u.lungeDef = d;
+      u.lungeWid = w.id;
+      u.lungeStop = false;
       u.lungeHits = new Set();
       this.sound('slash', u.x, u.y);
       return true;
@@ -459,24 +461,28 @@
       for (const w of e.weapons) if (w) w.charge = 0;
     }
 
+    // 格闘の当たり判定：刃先までの距離（reach）の内側で、
+    // slash は振り抜く角度（向き ± arc）の中、spin は全周
     meleeCheck(u) {
       const d = u.lungeDef;
       const spin = d.style === 'spin';
-      const hx = spin ? u.x : u.x + u.lungeDir.x * (u.radius + 4);
-      const hy = spin ? u.y : u.y + u.lungeDir.y * (u.radius + 4);
+      const dir = Math.atan2(u.lungeDir.y, u.lungeDir.x);
+      const color = d.blade && d.blade.color !== 'beam' ? d.blade.color : SL.FACTIONS[u.team].beam;
       const targets = this.units.concat(this.ships);
       for (const e of targets) {
         if (!e.targetable || e.team === u.team || u.lungeHits.has(e)) continue;
-        const rr = e.radius + d.reach;
-        if (U.dist2(hx, hy, e.x, e.y) < rr * rr) {
-          u.lungeHits.add(e);
-          const a = spin ? Math.atan2(e.y - u.y, e.x - u.x) : Math.atan2(u.lungeDir.y, u.lungeDir.x);
-          this.fx.slash(e.x, e.y, a, SL.FACTIONS[u.team].beam, Math.min(20, e.radius + 4));
-          this.fx.hit(e.x, e.y, '#ffffff');
-          this.sound('hit', e.x, e.y);
-          this.hitTarget(e, d.dmg, u, Math.cos(a), Math.sin(a), 170);
-          if (!spin) u.lunge = Math.min(u.lunge, 0.06);
-        }
+        const dx = e.x - u.x, dy = e.y - u.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist - e.radius > d.reach) continue;
+        const touching = dist < u.radius + e.radius + 4; // 密着している敵には向きに関係なく当たる
+        if (!spin && !touching && Math.abs(U.wrapAngle(Math.atan2(dy, dx) - dir)) > (d.arc || 1.2)) continue;
+        u.lungeHits.add(e);
+        const a = spin || touching ? Math.atan2(dy, dx) : dir;
+        this.fx.slash(e.x, e.y, a, color, Math.min(20, e.radius + 4));
+        this.fx.hit(e.x, e.y, '#ffffff');
+        this.sound('hit', e.x, e.y);
+        this.hitTarget(e, d.dmg, u, Math.cos(a), Math.sin(a), 170);
+        if (!spin) u.lungeStop = true;
       }
     }
 
@@ -783,19 +789,7 @@
       SL.Sprites.draw(ctx, u.sprite, u.x, u.y, u.facing, u.flash > 0 ? 'flash' : null);
       ctx.globalAlpha = 1;
 
-      if (u.lunge > 0 && u.lungeDef) {
-        ctx.strokeStyle = SL.FACTIONS[u.team].beam;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        if (u.lungeDef.style === 'spin') {
-          const a0 = time * 25;
-          ctx.arc(u.x, u.y, u.radius + u.lungeDef.reach * 0.6, a0, a0 + Math.PI * 1.5);
-        } else {
-          const a = Math.atan2(u.lungeDir.y, u.lungeDir.x);
-          ctx.arc(u.x, u.y, u.radius + 7, a - 0.9, a + 0.9);
-        }
-        ctx.stroke();
-      }
+      if (u.lunge > 0 && u.lungeDef) this.drawMelee(ctx, u);
       // チャージ中：縮んでいく輪
       const cw = u.weapons.find((w) => w && w.charge > 0);
       if (cw) {
@@ -819,6 +813,116 @@
         }
         ctx.stroke();
       }
+    }
+
+    // 光の刃：外側のにじみ → 刃の色 → 白い芯
+    strokeBlade(ctx, x1, y1, x2, y2, color, w) {
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = w + 3;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = w;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = Math.max(1, w - 2);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+
+    // 格闘武器の絵（振っている間だけ描く）
+    //  slash: 手元から刃を出し、上から下へ振り抜く。通った跡を扇形に残す（ヒートアックスは柄の先に焼けた刃）
+    //  spin : 長い柄の先の刃が、機体のまわりを 1 回転ちょっと回る
+    drawMelee(ctx, u) {
+      const d = u.lungeDef;
+      const b = d.blade || { len: Math.max(10, d.reach - 10), color: 'beam' };
+      const color = b.color === 'beam' ? SL.FACTIONS[u.team].beam : b.color;
+      const p = U.clamp(1 - u.lunge / (d.lungeTime || 0.25), 0, 1);
+      const e = 1 - Math.pow(1 - p, 3); // 振りはじめが速く、最後はゆっくり
+      const dir = Math.atan2(u.lungeDir.y, u.lungeDir.x);
+      const s = u.lungeDir.x >= 0 ? 1 : -1; // 右向きは時計回り、左向きは反時計回り（どちらも上から下へ）
+      ctx.save();
+      if (d.style === 'spin') {
+        const pole = b.pole || 30;
+        const tip = pole + b.len;
+        const turn = Math.PI * 2.4;
+        const start = dir - s * 0.8;
+        const ang = start + s * e * turn;
+        const a0 = start + s * Math.max(0, e - 0.35) * turn;
+        // 回った跡の輪
+        ctx.globalAlpha = 0.3 * (1 - p * 0.5);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = b.len;
+        ctx.beginPath();
+        ctx.arc(u.x, u.y, pole + b.len / 2, Math.min(a0, ang), Math.max(a0, ang));
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        // 柄（反対側にも少し出る）
+        const cx = Math.cos(ang), cy = Math.sin(ang);
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#8a90a8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(u.x - cx * 8, u.y - cy * 8);
+        ctx.lineTo(u.x + cx * pole, u.y + cy * pole);
+        ctx.stroke();
+        this.strokeBlade(ctx, u.x + cx * pole, u.y + cy * pole, u.x + cx * tip, u.y + cy * tip, color, 4);
+      } else {
+        const arc = d.arc || 1.2;
+        const start = dir - s * arc, end = dir + s * arc;
+        const ang = start + (end - start) * e;
+        const hx = u.x + Math.cos(dir) * u.radius * 0.4, hy = u.y + 1; // 手元
+        const r1 = Math.max(8, d.reach - u.radius * 0.4 - 1);           // 手元から刃先まで
+        const lo = Math.min(start, ang), hi = Math.max(start, ang);
+        // 振り抜いた跡（扇形）
+        ctx.globalAlpha = 0.25 * (1 - p * 0.6);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.arc(hx, hy, r1, lo, hi);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.75 * (1 - p * 0.5);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(hx, hy, r1, lo, hi);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        const cx = Math.cos(ang), cy = Math.sin(ang);
+        if (b.head === 'axe') {
+          // 柄と、振る向きの側についた焼けた刃
+          ctx.lineCap = 'round';
+          ctx.strokeStyle = '#8a90a8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(hx, hy);
+          ctx.lineTo(hx + cx * r1, hy + cy * r1);
+          ctx.stroke();
+          const lx = -cy * s, ly = cx * s; // 振る向き
+          const bx = hx + cx * (r1 - 9), by = hy + cy * (r1 - 9);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(bx + lx * 6 + cx * 1, by + ly * 6 + cy * 1);
+          ctx.lineTo(hx + cx * (r1 + 1) + lx * 8, hy + cy * (r1 + 1) + ly * 8);
+          ctx.lineTo(hx + cx * (r1 + 1), hy + cy * (r1 + 1));
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#fff3b0';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(bx + lx * 6 + cx * 1, by + ly * 6 + cy * 1);
+          ctx.lineTo(hx + cx * (r1 + 1) + lx * 8, hy + cy * (r1 + 1) + ly * 8);
+          ctx.stroke();
+        } else {
+          this.strokeBlade(ctx, hx + cx * 3, hy + cy * 3, hx + cx * r1, hy + cy * r1, color, 4);
+        }
+        // つか
+        ctx.fillStyle = '#c0c6d8';
+        ctx.fillRect(Math.round(hx - 1), Math.round(hy - 1), 3, 3);
+      }
+      ctx.restore();
     }
 
     drawProjectile(ctx, p) {

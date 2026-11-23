@@ -129,6 +129,8 @@ SL.Net = (function () {
         Math.round(u.stun * 10),
         u.lunge > 0 ? Math.round(Math.atan2(u.lungeDir.y, u.lungeDir.x) * 100) : 0,
         cw ? Math.round((cw.charge / cw.def.charge) * 100) : 0,
+        u.lunge > 0 && u.lungeWid ? WIDX[u.lungeWid] : -1,   // 振っている格闘武器
+        u.lunge > 0 ? Math.round(u.lunge * 1000) : 0,         // 振り終わりまでの残り（ミリ秒）
       ];
     });
     const players = game.players.map((p) => {
@@ -191,9 +193,10 @@ SL.Net = (function () {
       u.stun = a[8] / 10;
       if (f & 32) {
         const ang = a[9] / 100;
-        u.lunge = 0.1;
+        const def = a[11] >= 0 ? SL.WEAPONS[WIDS[a[11]]] : null;
+        u.lungeDef = def && def.kind === 'melee' ? def : f & 64 ? SL.WEAPONS.naginata : SL.WEAPONS.saber;
+        u.lunge = a[12] ? a[12] / 1000 : 0.1;
         u.lungeDir = { x: Math.cos(ang), y: Math.sin(ang) };
-        u.lungeDef = f & 64 ? { style: 'spin', reach: 26 } : { style: 'slash', reach: 16 };
       } else {
         u.lunge = 0;
       }
