@@ -64,14 +64,15 @@
       this.rec = keep;
     }
 
-    muzzle(x, y, color) {
-      this.record('muzzle', [x, y, color]);
-      this.add({ t: 'flash', x, y, r: 2.5, life: 0.06, max: 0.06, color });
+    muzzle(x, y, color, r = 2.5) {
+      this.record('muzzle', [x, y, color, r]);
+      this.add({ t: 'flash', x, y, r, life: 0.07, max: 0.07, color });
     }
 
-    smoke(x, y) {
-      const life = U.rand(0.25, 0.45);
-      this.add({ t: 'smoke', x, y, vx: U.rand(-8, 8), vy: U.rand(-8, 8), life, max: life, r: 1.5 });
+    // 煙（size: 一辺のドット数）
+    smoke(x, y, size = 2) {
+      const life = U.rand(0.3, 0.55) * (size > 2 ? 1.4 : 1);
+      this.add({ t: 'smoke', x, y, vx: U.rand(-8, 8), vy: U.rand(-8, 8), life, max: life, size });
     }
 
     explosion(x, y, size) {
@@ -150,11 +151,13 @@
             ctx.arc(p.x, p.y, p.r * (0.6 + k * 0.4), 0, Math.PI * 2);
             ctx.fill();
             break;
-          case 'smoke':
+          case 'smoke': {
+            const s = Math.round((p.size || 2) * (1.6 - k * 0.6)); // だんだん広がって薄くなる
             ctx.globalAlpha = k * 0.6;
-            ctx.fillStyle = '#c8c8d0';
-            ctx.fillRect(Math.round(p.x - 1), Math.round(p.y - 1), 2, 2);
+            ctx.fillStyle = k > 0.7 ? '#e8e2d0' : '#a8a8b4';
+            ctx.fillRect(Math.round(p.x - s / 2), Math.round(p.y - s / 2), s, s);
             break;
+          }
           case 'blast': {
             const r = U.lerp(p.r1, p.r0, k * k);
             ctx.globalAlpha = Math.min(1, k * 1.8);

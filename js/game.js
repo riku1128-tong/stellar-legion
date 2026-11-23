@@ -6,13 +6,13 @@
   const C = SL.CONFIG;
   const F = SL.Font;
   const LOBBY_STATES = ['online', 'hosting', 'joining', 'connecting'];
-  const PRESS_KEYS = ['target', 'swap', 'transform', 'melee'];
+  const PRESS_KEYS = ['target', 'swap', 'transform', 'melee', 'face'];
 
   function blankRemote() {
     return {
       mx: 0, my: 0,
       held: { fire1: false, fire2: false, melee: false, dash: false },
-      pressed: { target: false, swap: false, transform: false, melee: false },
+      pressed: { target: false, swap: false, transform: false, melee: false, face: false },
     };
   }
 
@@ -45,6 +45,15 @@
 
       if (SL.DEBUG.demo) this.startMatch('demo');
       else if (SL.DEBUG.mode === 'cpu' || SL.DEBUG.mode === '2p') this.startMatch(SL.DEBUG.mode);
+
+      // 対戦中にタブを閉じかけたら確認する（Ctrl と W を同時に押すと、ブラウザがタブを閉じようとするため）
+      window.addEventListener('beforeunload', (e) => {
+        const playing = this.mode !== 'demo' && (this.state === 'battle' || this.state === 'vs' || !!this.net);
+        if (playing) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
     }
 
     inputMode() {
@@ -146,6 +155,7 @@
       if (p.unit && p.unit !== unit) {
         p.unit.controller = -1;
         p.unit.leader = -1;
+        p.unit.faceLock = 0; // AI に戻った機体は自動で向きを変える
       }
       p.unit = unit;
       if (unit) {
@@ -179,6 +189,7 @@
     }
 
     cycleTarget(u) {
+      u.faceLock = 0; // 目標を切り替えたら、向きは自動（目標の方を向く）に戻す
       const list = this.world.enemiesByDistance(u).slice(0, 8);
       if (list.length === 0) return;
       const i = list.indexOf(u.target);
@@ -323,6 +334,7 @@
       it.melee = inp.held.melee || inp.pressed.melee;
       it.dash = inp.held.dash;
       if (inp.pressed.transform) it.transform = true;
+      if (inp.pressed.face) it.faceFlip = true;
       if (inp.pressed.target) this.cycleTarget(u);
       if (inp.pressed.swap) {
         const nu = this.nextAlly(p.team, u);
@@ -477,8 +489,8 @@
       this.net = {
         role,
         remote: blankRemote(),
-        lastC: { target: 0, swap: 0, transform: 0, melee: 0 },
-        counters: { target: 0, swap: 0, transform: 0, melee: 0 },
+        lastC: { target: 0, swap: 0, transform: 0, melee: 0, face: 0 },
+        counters: { target: 0, swap: 0, transform: 0, melee: 0, face: 0 },
         lastRecv: performance.now(),
         sendT: 0,
         inputT: 0,
@@ -584,7 +596,20 @@
           if (u.flash > 0) u.flash -= dt;
           if (u.lunge > 0) u.lunge = Math.max(0.001, u.lunge - dt); // 次の状態が届くまで振りを進めて見せる
         }
-        for (const p of w.projectiles) { p.x += p.vx * dt; p.y += p.vy * dt; }
+        for (const p of w.projectiles) {
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          // ミサイルとロケット弾の煙は、こちらの画面で作る
+          const look = p.def && p.def.look;
+          if (look === 'missile' || look === 'homing' || look === 'rocket') {
+            p.trail = (p.trail || 0) - dt;
+            if (p.trail <= 0) {
+              p.trail = look === 'rocket' ? 0.025 : 0.03;
+              const back = look === 'rocket' ? 9 : 6;
+              w.fx.smoke(p.x - Math.cos(p.ang) * back, p.y - Math.sin(p.ang) * back, look === 'rocket' ? 4 : 3);
+            }
+          }
+        }
         for (let i = w.lasers.length - 1; i >= 0; i--) {
           w.lasers[i].life -= dt;
           if (w.lasers[i].life <= 0) w.lasers.splice(i, 1);
@@ -670,14 +695,14 @@
       });
 
       const help = [
-        ['1P ', 'MOVE:WASD SHOT:J SUB:K MELEE:L BOOST:SPACE SWAP:TAB MODE:SHIFT TGT:U', '#ff6a6a'],
-        ['2P ', 'MOVE:ARROWS SHOT:N1 SUB:N2 MELEE:N3 BOOST:N0 SWAP:N5 MODE:N6 TGT:N4', '#5ad0ff'],
-        ['PAD', 'MOVE:STICK SHOT:A SUB:B MELEE:X BOOST:RT SWAP:LT MODE:LB TGT:Y', '#c0c8e8'],
+        ['1P ', 'MOVE:WASD SHOT:J SUB:K MELEE:L BOOST:SPACE SWAP:TAB MODE:SHIFT TGT:U FACE:CTRL', '#ff6a6a'],
+        ['2P ', 'MOVE:ARROWS SHOT:N1 SUB:N2 MELEE:N3 BOOST:N0 SWAP:N5 MODE:N6 TGT:N4 FACE:N7', '#5ad0ff'],
+        ['PAD', 'MOVE:STICK SHOT:A SUB:B MELEE:X BOOST:RT SWAP:LT MODE:LB TGT:Y FACE:RB', '#c0c8e8'],
       ];
       help.forEach(([tag, text, col], i) => {
         const y = 184 + i * 12;
-        F.draw(ctx, tag, 34, y, { color: col });
-        F.draw(ctx, text, 58, y, { color: '#c0c8e8' });
+        F.draw(ctx, tag, 22, y, { color: col });
+        F.draw(ctx, text, 46, y, { color: '#c0c8e8' });
       });
       F.draw(ctx, 'ESC/P: PAUSE   M: SOUND ON/OFF   (N = NUMPAD)', C.W / 2, 226, { align: 'center', color: '#7a84a8' });
       F.draw(ctx, 'RETURN TO YOUR BATTLESHIP TO REPAIR. DESTROY THE ENEMY SHIP FOR A BONUS.', C.W / 2, 240, { align: 'center', color: '#4be06a' });

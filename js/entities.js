@@ -26,6 +26,7 @@
       this.maxHp = t.hp;
       this.alive = true;
       this.facing = team === 0 ? 1 : -1;
+      this.faceLock = 0;         // 0 = 向きは自動（目標の方を向く）、1 / -1 = 手動で右 / 左に固定（Ctrl）
       this.maxEnergy = t.energy || C.ENERGY_MAX;
       this.energy = this.maxEnergy;
       this.enT = 99;             // 最後にビームを撃ってからの秒数
@@ -46,7 +47,7 @@
       this.target = null;
       this.controller = -1;      // 操作しているプレイヤー番号（-1 = AI）
       this.leader = -1;          // このユニットを担当しているプレイヤー（CPU 担当も含む）
-      this.intent = { mx: 0, my: 0, fire1: false, fire2: false, melee: false, dash: false, transform: false };
+      this.intent = { mx: 0, my: 0, fire1: false, fire2: false, melee: false, dash: false, transform: false, faceFlip: false };
       this.flash = 0;
       this.lunge = 0;
       this.lungeDir = { x: 1, y: 0 };
@@ -66,6 +67,8 @@
     get baseSpeed() { return this.type.speed * (this.mode === 'move' && this.type.transform ? this.type.transform.speed : 1); }
     get targetable() { return this.alive && !this.docked; }
     get charging() { return this.weapons.some((w) => w && w.charge > 0); }
+    // 手動で向きを固定しているとき、e が後ろ側にいるか
+    isBehind(e) { return this.faceLock !== 0 && (e.x - this.x) * this.faceLock < 0; }
   }
 
   class Ship {
@@ -163,12 +166,12 @@
       return list.sort((a, b) => U.dist2(u.x, u.y, a.x, a.y) - U.dist2(u.x, u.y, b.x, b.y));
     }
 
-    // いちばん近い敵の機体（いなければ敵の戦艦）
+    // いちばん近い敵の機体（いなければ敵の戦艦）。向きを固定しているときは前にいる敵を優先する
     nearestEnemy(u) {
       let best = null, bd = Infinity;
       for (const e of this.units) {
         if (!e.targetable || e.team === u.team) continue;
-        const d = U.dist2(u.x, u.y, e.x, e.y);
+        const d = U.dist2(u.x, u.y, e.x, e.y) * (u.isBehind(e) ? 100 : 1);
         if (d < bd) { bd = d; best = e; }
       }
       if (!best) {
@@ -204,6 +207,11 @@
       const it = u.intent;
       if (u.target && !u.target.targetable) u.target = null;
       if (!u.target && u.controller >= 0) u.target = this.nearestEnemy(u);
+      // 向きを固定しているときに目標が後ろへ回ったら、前にいる敵に目標を移す
+      if (u.controller >= 0 && u.faceLock && u.target && u.isBehind(u.target)) {
+        const front = this.nearestEnemy(u);
+        if (front && !u.isBehind(front)) u.target = front;
+      }
       if (u.transformCD > 0) u.transformCD -= dt;
       if (u.flash > 0) u.flash -= dt;
       for (const w of u.weapons) if (w && w.cd > 0) w.cd -= dt;
@@ -225,6 +233,15 @@
         this.sound('transform', u.x, u.y);
       }
       it.transform = false;
+
+      // 左右の向きを反転して固定する（Ctrl）。目標が後ろになったら、前にいる敵に目標を移す
+      if (it.faceFlip && !stunned) {
+        u.faceLock = -(u.faceLock || u.facing);
+        u.facing = u.faceLock;
+        if (u.target && u.isBehind(u.target)) u.target = this.nearestEnemy(u);
+        this.sound('turn', u.x, u.y, 0.8);
+      }
+      it.faceFlip = false;
 
       // ブーストゲージ
       const inMag = stunned ? 0 : Math.min(1, Math.hypot(it.mx, it.my));
@@ -300,6 +317,8 @@
       // 絵の向き
       if (u.lunge > 0) {
         if (Math.abs(u.lungeDir.x) > 0.1) u.facing = u.lungeDir.x > 0 ? 1 : -1;
+      } else if (u.faceLock && u.mode !== 'move') {
+        u.facing = u.faceLock;
       } else if (u.mode === 'move') {
         if (u.speed > 10 && Math.abs(Math.cos(u.heading)) > 0.2) u.facing = Math.cos(u.heading) > 0 ? 1 : -1;
       } else if (u.target) {
@@ -338,7 +357,8 @@
 
     aimAngle(u, speed, lead) {
       const tgt = u.target && u.target.targetable ? u.target : null;
-      if (!tgt) return u.facing > 0 ? 0 : Math.PI;
+      // 目標がいないか、向きを固定していて目標が後ろにいるときは、まっすぐ前へ撃つ
+      if (!tgt || u.isBehind(tgt)) return u.facing > 0 ? 0 : Math.PI;
       const dist = Math.hypot(tgt.x - u.x, tgt.y - u.y);
       const tt = speed ? dist / speed : 0;
       let ang = Math.atan2(tgt.y + tgt.vy * tt * lead - u.y, tgt.x + tgt.vx * tt * lead - u.x);
@@ -362,7 +382,7 @@
 
       const lead = u.controller >= 0 ? 0.85 : 0.6;
       const ang = this.aimAngle(u, d.kind === 'missile' ? 0 : d.speed, lead);
-      const tgt = u.target && u.target.targetable ? u.target : null;
+      const tgt = u.target && u.target.targetable && !u.isBehind(u.target) ? u.target : null;
       const count = d.count || 1;
       const color = d.kind === 'beam' ? SL.FACTIONS[u.team].beam : d.kind === 'shell' ? '#ffcf4a' : '#ffb347';
       const spread = (d.spread || 0) * (u.controller >= 0 ? 0.5 : 1);
@@ -381,7 +401,8 @@
           trail: 0,
         });
       }
-      this.fx.muzzle(u.x + Math.cos(ang) * (u.radius + 3), u.y + Math.sin(ang) * (u.radius + 3), color);
+      const flash = d.look === 'rocket' || d.look === 'shell' ? 5.5 : d.look === 'tracer' || d.kind === 'missile' ? 3.5 : 2.5;
+      this.fx.muzzle(u.x + Math.cos(ang) * (u.radius + 3), u.y + Math.sin(ang) * (u.radius + 3), color, flash);
       const snd = d.kind === 'beam' ? 'beam' : d.kind === 'missile' ? 'missile' : d.kind === 'shell' ? 'shell' : 'shot';
       this.sound(snd, u.x, u.y, d.kind === 'bullet' && d.cooldown < 0.15 ? 0.5 : 1);
       return true;
@@ -417,7 +438,7 @@
       const d = w.def;
       w.cd = d.cooldown;
       let dx = u.facing, dy = 0;
-      const tgt = u.target && u.target.targetable ? u.target : null;
+      const tgt = u.target && u.target.targetable && !u.isBehind(u.target) ? u.target : null;
       if (tgt) {
         const ex = tgt.x - u.x, ey = tgt.y - u.y;
         const dist = Math.hypot(ex, ey) || 1;
@@ -592,7 +613,7 @@
     // ---------------- 弾 ----------------
     splash(p, except) {
       const R = p.def.splash;
-      this.fx.explosion(p.x, p.y, Math.round(R * 0.5));
+      this.fx.explosion(p.x, p.y, Math.round(R * 0.75));
       const targets = this.units.concat(this.ships);
       for (const e of targets) {
         if (!e.targetable || e.team === p.team || e === except) continue;
@@ -623,7 +644,14 @@
           p.trail -= dt;
           if (p.trail <= 0) {
             p.trail = 0.03;
-            this.fx.smoke(p.x - Math.cos(p.ang) * 3, p.y - Math.sin(p.ang) * 3);
+            this.fx.smoke(p.x - Math.cos(p.ang) * 6, p.y - Math.sin(p.ang) * 6, 3);
+          }
+        } else if (p.def.look === 'rocket') {
+          // バズーカのロケット弾は太い煙を引く
+          p.trail -= dt;
+          if (p.trail <= 0) {
+            p.trail = 0.025;
+            this.fx.smoke(p.x - Math.cos(p.ang) * 9, p.y - Math.sin(p.ang) * 9, 4);
           }
         }
         p.x += p.vx * dt;
@@ -926,7 +954,8 @@
     }
 
     drawProjectile(ctx, p) {
-      switch (p.kind) {
+      const look = (p.def && p.def.look) || p.kind;
+      switch (look) {
         case 'beam': {
           const sp = Math.hypot(p.vx, p.vy) || 1;
           const len = p.def.len || 10;
@@ -945,26 +974,85 @@
           ctx.stroke();
           break;
         }
-        case 'bullet':
-          ctx.fillStyle = p.color;
-          ctx.fillRect(Math.round(p.x - 1), Math.round(p.y - 1), 2, 2);
-          ctx.fillStyle = 'rgba(255,180,70,0.4)';
-          ctx.fillRect(Math.round(p.x - p.vx * 0.012 - 0.5), Math.round(p.y - p.vy * 0.012 - 0.5), 1, 1);
+        case 'tracer':
+        case 'tracerSmall':
+        case 'bullet': {
+          // 曳光弾：進む向きに伸びた光の筋（連射砲は少し小さい）
+          const small = look === 'tracerSmall';
+          const sp = Math.hypot(p.vx, p.vy) || 1;
+          const ux = p.vx / sp, uy = p.vy / sp;
+          const L = small ? 7 : 11;
+          ctx.lineCap = 'round';
+          ctx.strokeStyle = 'rgba(255,150,40,0.45)';
+          ctx.lineWidth = small ? 3 : 4;
+          ctx.beginPath(); ctx.moveTo(p.x - ux * L, p.y - uy * L); ctx.lineTo(p.x, p.y); ctx.stroke();
+          ctx.strokeStyle = '#ffd23a';
+          ctx.lineWidth = small ? 1.5 : 2;
+          ctx.beginPath(); ctx.moveTo(p.x - ux * L * 0.7, p.y - uy * L * 0.7); ctx.lineTo(p.x, p.y); ctx.stroke();
+          ctx.lineCap = 'butt';
+          const h = small ? 2 : 3;
+          ctx.fillStyle = '#fffbe6';
+          ctx.fillRect(Math.round(p.x - h / 2), Math.round(p.y - h / 2), h, h);
           break;
-        case 'missile':
-          ctx.fillStyle = '#e8e8f0';
-          ctx.fillRect(Math.round(p.x - 1.5), Math.round(p.y - 1), 3, 2);
-          ctx.fillStyle = '#ff9a2a';
-          ctx.fillRect(Math.round(p.x - Math.cos(p.ang) * 3 - 0.5), Math.round(p.y - Math.sin(p.ang) * 3 - 0.5), 1, 1);
-          break;
-        case 'shell':
+        }
+        case 'shell': {
+          // 砲弾：光る大きな弾と、後ろに残る熱の筋
+          const sp = Math.hypot(p.vx, p.vy) || 1;
+          const ux = p.vx / sp, uy = p.vy / sp;
+          ctx.lineCap = 'round';
+          ctx.strokeStyle = 'rgba(255,140,40,0.4)';
+          ctx.lineWidth = 5;
+          ctx.beginPath(); ctx.moveTo(p.x - ux * 13, p.y - uy * 13); ctx.lineTo(p.x, p.y); ctx.stroke();
+          ctx.lineCap = 'butt';
+          ctx.fillStyle = 'rgba(255,140,40,0.35)';
+          ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = '#ff8a2a';
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = '#fff3b0';
-          ctx.fillRect(Math.round(p.x - 1), Math.round(p.y - 1), 2, 2);
+          ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2); ctx.fill();
           break;
+        }
+        case 'rocket': {
+          // バズーカのロケット弾：弾頭・胴・尾翼と、大きな噴射炎
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.ang);
+          const fl = 6 + Math.random() * 5;
+          ctx.fillStyle = '#ff7a2a';
+          ctx.beginPath(); ctx.moveTo(-5, -3); ctx.lineTo(-5 - fl, 0); ctx.lineTo(-5, 3); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#ffe08a';
+          ctx.beginPath(); ctx.moveTo(-5, -1.5); ctx.lineTo(-5 - fl * 0.55, 0); ctx.lineTo(-5, 1.5); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#6a7080';
+          ctx.fillRect(-6, -4, 3, 8);
+          ctx.fillStyle = '#d8dce8';
+          ctx.fillRect(-5, -2, 10, 4);
+          ctx.fillStyle = '#8a90a0';
+          ctx.fillRect(-5, 1, 10, 1);
+          ctx.fillStyle = '#ff4a3a';
+          ctx.beginPath(); ctx.moveTo(5, -2); ctx.lineTo(9, 0); ctx.lineTo(5, 2); ctx.closePath(); ctx.fill();
+          ctx.restore();
+          break;
+        }
+        case 'missile':
+        case 'homing': {
+          // ミサイル：白い胴、弾頭（ホーミングは緑）、尾翼、噴射炎
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.ang);
+          const fl = 4 + Math.random() * 4;
+          ctx.fillStyle = '#ff9a2a';
+          ctx.beginPath(); ctx.moveTo(-4, -2); ctx.lineTo(-4 - fl, 0); ctx.lineTo(-4, 2); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#fff3b0';
+          ctx.beginPath(); ctx.moveTo(-4, -1); ctx.lineTo(-4 - fl * 0.5, 0); ctx.lineTo(-4, 1); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#7a8090';
+          ctx.fillRect(-5, -3, 2, 6);
+          ctx.fillStyle = '#eef0f6';
+          ctx.fillRect(-4, -1.5, 8, 3);
+          ctx.fillStyle = look === 'homing' ? '#4be06a' : '#ff5a3a';
+          ctx.beginPath(); ctx.moveTo(4, -1.5); ctx.lineTo(7, 0); ctx.lineTo(4, 1.5); ctx.closePath(); ctx.fill();
+          ctx.restore();
+          break;
+        }
       }
     }
   }

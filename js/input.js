@@ -7,19 +7,19 @@ SL.Input = (function () {
     {
       up: ['KeyW'], down: ['KeyS'], left: ['KeyA'], right: ['KeyD'],
       fire1: ['KeyJ'], fire2: ['KeyK'], melee: ['KeyL'], dash: ['Space'],
-      target: ['KeyU'], swap: ['Tab'], transform: ['ShiftLeft'],
+      target: ['KeyU'], swap: ['Tab'], transform: ['ShiftLeft'], face: ['ControlLeft'],
     },
     {
       up: ['ArrowUp'], down: ['ArrowDown'], left: ['ArrowLeft'], right: ['ArrowRight'],
       fire1: ['Numpad1', 'Comma'], fire2: ['Numpad2', 'Period'], melee: ['Numpad3', 'Slash'],
-      dash: ['Numpad0', 'ControlRight'], target: ['Numpad4', 'Semicolon'], swap: ['Numpad5', 'Quote'],
-      transform: ['Numpad6', 'ShiftRight'],
+      dash: ['Numpad0', 'Enter'], target: ['Numpad4', 'Semicolon'], swap: ['Numpad5', 'Quote'],
+      transform: ['Numpad6', 'ShiftRight'], face: ['Numpad7', 'ControlRight'],
     },
   ];
   // 標準配置のゲームパッドのボタン番号
-  const PAD = { fire1: [0], fire2: [1], melee: [2], target: [3], swap: [6], dash: [7, 5], transform: [4] };
+  const PAD = { fire1: [0], fire2: [1], melee: [2], target: [3], swap: [6], dash: [7], transform: [4], face: [5] };
   const PAD_START = 9, PAD_BACK = 8;
-  const ACTIONS = ['fire1', 'fire2', 'melee', 'dash', 'target', 'swap', 'transform'];
+  const ACTIONS = ['fire1', 'fire2', 'melee', 'dash', 'target', 'swap', 'transform', 'face'];
   const DEADZONE = 0.25;
 
   const PREVENT = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab']);
@@ -32,7 +32,10 @@ SL.Input = (function () {
   let typed = [];             // 入力された文字（e.key）
 
   window.addEventListener('keydown', (e) => {
-    if (PREVENT.has(e.code) || (textMode && e.key === 'Backspace')) e.preventDefault();
+    // ゲームで使うキーはブラウザの動作を止める。Ctrl と同時押しのショートカット（Ctrl+S など）もここで止まる。
+    // ただし Ctrl+W（タブを閉じる）など一部はブラウザが優先するため止められない
+    const ctrlShortcut = e.ctrlKey && !e.shiftKey && !e.altKey && !textMode && e.code !== 'KeyR' && !/^F\d+$/.test(e.code); // 再読み込み（Ctrl+R / Ctrl+F5）は残す
+    if (PREVENT.has(e.code) || (textMode && e.key === 'Backspace') || ctrlShortcut) e.preventDefault();
     if (textMode) typed.push(e.key);
     if (e.repeat) return;
     down.add(e.code);

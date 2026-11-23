@@ -30,14 +30,14 @@ SL.FACTIONS = [
 //         arc: slash が振り抜く角度の半分（ラジアン）。この範囲にいる敵に当たる
 //         blade: 刃の見た目（len: 刃の長さ, color: 'beam' なら勢力のビームの色, head: 'axe' なら斧の形, pole: 柄の長さ）
 SL.WEAPONS = {
-  // --- 実弾 ---
-  rifle:       { name: 'MACHINE RIFLE',  short: 'RIFL', kind: 'bullet',  dmg: 7,   speed: 340, cooldown: 0.30, ammo: 60,  range: 280, spread: 0.06, r: 2 },
-  vulcan:      { name: 'VULCAN',         short: 'VULC', kind: 'bullet',  dmg: 3.5, speed: 380, cooldown: 0.09, ammo: 160, range: 240, spread: 0.10, r: 1.5 },
-  cannon:      { name: 'CANNON',         short: 'CANN', kind: 'shell',   dmg: 20,  speed: 280, cooldown: 1.3,  ammo: 30,  range: 440, spread: 0.04, splash: 22, r: 3 },
-  bazooka:     { name: 'BAZOOKA',        short: 'BAZK', kind: 'shell',   dmg: 26,  speed: 230, cooldown: 1.2,  ammo: 12,  range: 300, spread: 0.03, splash: 20, r: 3 },
-  missile3:    { name: '3WAY MISSILE',   short: '3WAY', kind: 'missile', dmg: 12,  speed: 170, maxSpeed: 330, turn: 0,   cooldown: 1.0, ammo: 8, range: 340, count: 3, arc: 0.5, life: 1.6, r: 2 },
-  missile5:    { name: '5WAY MISSILE',   short: '5WAY', kind: 'missile', dmg: 11,  speed: 160, maxSpeed: 310, turn: 0,   cooldown: 1.4, ammo: 6, range: 320, count: 5, arc: 0.9, life: 1.6, r: 2 },
-  homing:      { name: 'HOMING MISSILE', short: 'HOMG', kind: 'missile', dmg: 16,  speed: 140, maxSpeed: 300, turn: 3.6, cooldown: 1.1, ammo: 8, range: 400, count: 2, arc: 1.2, life: 2.8, r: 2 },
+  // --- 実弾 ---（look: 弾の見た目。tracer = 曳光弾, shell = 砲弾, rocket = ロケット弾, missile / homing = ミサイル）
+  rifle:       { name: 'MACHINE RIFLE',  short: 'RIFL', kind: 'bullet',  dmg: 7,   speed: 340, cooldown: 0.30, ammo: 60,  range: 280, spread: 0.06, r: 2, look: 'tracer' },
+  vulcan:      { name: 'VULCAN',         short: 'VULC', kind: 'bullet',  dmg: 3.5, speed: 380, cooldown: 0.09, ammo: 160, range: 240, spread: 0.10, r: 1.5, look: 'tracerSmall' },
+  cannon:      { name: 'CANNON',         short: 'CANN', kind: 'shell',   dmg: 20,  speed: 280, cooldown: 1.3,  ammo: 30,  range: 440, spread: 0.04, splash: 22, r: 3, look: 'shell' },
+  bazooka:     { name: 'BAZOOKA',        short: 'BAZK', kind: 'shell',   dmg: 26,  speed: 230, cooldown: 1.2,  ammo: 12,  range: 300, spread: 0.03, splash: 20, r: 3, look: 'rocket' },
+  missile3:    { name: '3WAY MISSILE',   short: '3WAY', kind: 'missile', dmg: 12,  speed: 170, maxSpeed: 330, turn: 0,   cooldown: 1.0, ammo: 8, range: 340, count: 3, arc: 0.5, life: 1.6, r: 2, look: 'missile' },
+  missile5:    { name: '5WAY MISSILE',   short: '5WAY', kind: 'missile', dmg: 11,  speed: 160, maxSpeed: 310, turn: 0,   cooldown: 1.4, ammo: 6, range: 320, count: 5, arc: 0.9, life: 1.6, r: 2, look: 'missile' },
+  homing:      { name: 'HOMING MISSILE', short: 'HOMG', kind: 'missile', dmg: 16,  speed: 140, maxSpeed: 300, turn: 3.6, cooldown: 1.1, ammo: 8, range: 400, count: 2, arc: 1.2, life: 2.8, r: 2, look: 'homing' },
   // --- ビーム ---
   beam_rifle:  { name: 'BEAM RIFLE',     short: 'BEAM', kind: 'beam',    dmg: 14,  speed: 480, cooldown: 0.45, energy: 12, range: 400, spread: 0.03, len: 12, w: 2 },
   spread_beam: { name: 'SPREAD BEAM',    short: 'SPRD', kind: 'beam',    dmg: 11,  speed: 380, cooldown: 1.6,  energy: 30, range: 360, spread: 0.02, count: 5, arc: 0.5, len: 14, w: 3 },

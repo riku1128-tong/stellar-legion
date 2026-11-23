@@ -96,11 +96,11 @@ SL.HUD = (function () {
   }
 
   // ---- 武装パネル ----
-  // [主射撃, 副射撃, 格闘, ブースト, 目標切り替え, 乗り換え, 変形]
+  // [主射撃, 副射撃, 格闘, ブースト, 目標切り替え, 乗り換え, 変形, 向き]
   const KEY_LABELS = {
-    kb0: ['J', 'K', 'L', 'SPC', 'U', 'TAB', 'SHIFT'],
-    kb1: ['N1', 'N2', 'N3', 'N0', 'N4', 'N5', 'N6'],
-    pad: ['A', 'B', 'X', 'RT', 'Y', 'LT', 'LB'],
+    kb0: ['J', 'K', 'L', 'SPC', 'U', 'TAB', 'SHIFT', 'CTRL'],
+    kb1: ['N1', 'N2', 'N3', 'N0', 'N4', 'N5', 'N6', 'N7'],
+    pad: ['A', 'B', 'X', 'RT', 'Y', 'LT', 'LB', 'RB'],
   };
 
   function drawWeapons(ctx, game, p, side) {
@@ -114,7 +114,7 @@ SL.HUD = (function () {
     const total = BW * 3 + GAP * 2;
     const right = side === 'right';
     const x0 = right ? C.W - 6 - total : 6;
-    const y0 = C.H - 68;
+    const y0 = C.H - 77;
     for (let i = 0; i < 3; i++) {
       const w = u.weapons[i];
       const x = x0 + i * (BW + GAP);
@@ -156,9 +156,12 @@ SL.HUD = (function () {
     const ax = right ? x0 + total : x0;
     const al = right ? 'right' : 'left';
     F.draw(ctx, keys[3] + ':BOOST ' + keys[5] + ':SWAP ' + keys[4] + ':TGT', ax, y0 + BH + 3, { align: al, color: '#7a84a8' });
+    // 向き：自動（目標の方を向く）か、Ctrl で固定した向きか
+    const faceText = u.faceLock ? (u.faceLock > 0 ? 'FACE >> FIXED' : 'FACE << FIXED') : 'FACE AUTO';
+    F.draw(ctx, keys[7] + ':' + faceText, ax, y0 + BH + 12, { align: al, color: u.faceLock ? '#ffd23a' : '#7a84a8' });
     if (u.type.transform) {
       const modeText = u.mode === 'move' ? 'MOVE MODE' : 'BATTLE MODE';
-      F.draw(ctx, keys[6] + ':' + modeText, ax, y0 + BH + 12, { align: al, color: u.mode === 'move' ? '#6ff6ff' : '#7a84a8' });
+      F.draw(ctx, keys[6] + ':' + modeText, ax, y0 + BH + 21, { align: al, color: u.mode === 'move' ? '#6ff6ff' : '#7a84a8' });
     }
     // 状態の表示
     let status = null, scol = '#fff';

@@ -141,7 +141,7 @@ SL.Net = (function () {
         sw: p.switchT > 0 ? 1 : 0,
         tg: t ? (t.isShip ? 1000 + t.team : t.id) : -1,
         d: u ? [u.weapons.map((x) => (x ? [x.ammo, Math.round(x.cd * 100), Math.round(x.charge * 100)] : null)),
-          Math.round(u.energy), Math.round(u.boost * 100), u.boostLock ? 1 : 0] : null,
+          Math.round(u.energy), Math.round(u.boost * 100), u.boostLock ? 1 : 0, u.faceLock] : null,
       };
     });
     const ev = w.takeRecorded().map((e) => e.map(r10));
@@ -238,6 +238,7 @@ SL.Net = (function () {
         p.unit.energy = pd.d[1];
         p.unit.boost = pd.d[2] / 100;
         p.unit.boostLock = !!pd.d[3];
+        p.unit.faceLock = pd.d[4] || 0;
       }
     });
 
