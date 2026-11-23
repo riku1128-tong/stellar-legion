@@ -110,10 +110,11 @@
 - その行を消すと、コードで描いた仮の図形に戻る。読み込めなかった画像も仮の図形で表示され、ブラウザのコンソールに警告が出る
 
 ```js
-SL.ASSET_OVERRIDES = {
-  az_grunt: { src: 'assets/az_grunt.png', height: 26, maxWidth: 36 },                 // いまの設定
-  az_grunt: { src: 'assets/my_grunt.png', height: 32, maxWidth: 40, facing: 'left' }, // 例：別のファイル・大きめ・左向きの絵
-};
+// いまの設定（assets/az_grunt.png を高さ 26 ドットで出す）
+az_grunt: { src: 'assets/az_grunt.png', height: 26, maxWidth: 36 },
+
+// 書き換えの例（別のファイル名・少し大きめ・左向きで描いた絵）
+az_grunt: { src: 'assets/my_grunt.png', height: 32, maxWidth: 40, facing: 'left' },
 ```
 
 いまの表示の高さ（ドット）: 隊長機・重装機 30、変形機 27（移動モード 15）、量産機 26、格闘機 28、砲撃機 23〜25、巨大機 44〜46、戦艦 29〜40。
