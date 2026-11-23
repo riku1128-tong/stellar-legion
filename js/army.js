@@ -10,16 +10,13 @@ SL.ARMY_COUNTS = {
     az_raider_2: 2,  // BALL 遊撃機
     az_heavy: 2,  // GUN-CANON 重装機
     az_grunt: 11,  // GIM 量産機
-    az_special: 0,  // NO ENTRY 格闘機
     az_artillery: 2,  // GUN-TANK 砲撃機
-    az_giant: 0,  // NO ENTRY 巨大機
   },
   cr: {
     cr_commander: 1,  // SHA-GELGOOG 隊長機
     cr_commander_3: 1,  // SHA-ZAKU-II 隊長機
     cr_commander_2: 1,  // SHA-ZGOK 隊長機
     cr_commander_4: 1,  // ZGOK 量産機
-    cr_raider: 0,  // NO ENTRY 遊撃機
     cr_heavy: 1,  // GYAN 重装機
     cr_heavy_2: 1,  // AGGAI 重装機
     cr_grunt: 7,  // ZAKU-II 量産機

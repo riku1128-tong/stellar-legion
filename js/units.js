@@ -35,17 +35,9 @@ SL.UNIT_TYPES = {
     name: 'GIM', faction: 'az', role: 'grunt', size: 'S', hp: 200, speed: 105, radius: 8, sprite: 'az_grunt',
     weapons: ['rifle', null, 'saber'],
   },
-  az_special: {
-    name: 'NO ENTRY', faction: 'az', role: 'special', size: 'S', hp: 230, speed: 110, radius: 8, sprite: 'az_special',
-    weapons: ['rifle', 'missile3', 'naginata'],
-  },
   az_artillery: {
     name: 'GUN-TANK', faction: 'az', role: 'artillery', size: 'S', hp: 260, speed: 75, radius: 10, sprite: 'az_artillery',
     weapons: ['cannon', 'beam_rifle', null],
-  },
-  az_giant: {
-    name: 'NO ENTRY', faction: 'az', role: 'giant', size: 'S', hp: 1000, speed: 50, energy: 160, radius: 22, sprite: 'az_giant',
-    weapons: ['spread_beam', 'missile5', null],
   },
   // --- クリムゾン帝国 ---
   cr_commander: {
@@ -63,11 +55,6 @@ SL.UNIT_TYPES = {
   cr_commander_4: {
     name: 'ZGOK', faction: 'cr', role: 'grunt', size: 'S', hp: 310, speed: 90, radius: 9, sprite: 'cr_ZGOCK',
     weapons: ['beam_rifle', 'missile3', 'heat_axe'],
-  },
-  cr_raider: {
-    name: 'NO ENTRY', faction: 'cr', role: 'raider', size: 'S', hp: 250, speed: 118, radius: 8, sprite: 'cr_raider',
-    transform: { speed: 1.7, turn: 0.7, sprite: 'cr_raider_jet' },
-    weapons: ['vulcan', 'homing', 'heat_axe'],
   },
   cr_heavy: {
     name: 'GYAN', faction: 'cr', role: 'heavy', size: 'S', hp: 480, speed: 80, radius: 10, sprite: 'cr_heavy',
