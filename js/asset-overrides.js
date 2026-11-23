@@ -29,7 +29,7 @@ SL.ASSET_OVERRIDES = {
   az_grunt:      { src: 'assets/az_grunt.png', height: 26, maxWidth: 36 },  // 量産機 GUARD
   az_special:    { src: 'assets/az_special.png',    height: 28, maxWidth: 40 },  // 格闘機 GLAIVE
   az_artillery:  { src: 'assets/az_artillery.png', height: 23, maxWidth: 40 },  // 砲撃機 MORTAR
-  az_giant:      { src: 'assets/az_giant.png',      height: 46, maxWidth: 64 },  // 巨大機 CITADEL
+  az_giant:      { src: 'assets/az_giant.png', height: 46, maxWidth: 64 },  // 巨大機 CITADEL
   az_ship:       { src: 'assets/az_ship.png', height: 29, maxWidth: 96 },  // 戦艦 AURORA
   // ---- クリムゾン帝国 ----
   cr_commander:  { src: 'assets/cr_commander.png', height: 30, maxWidth: 40 },  // 隊長機 TRIBUNE
