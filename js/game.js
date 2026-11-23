@@ -727,12 +727,12 @@
       this.bg.draw(ctx, 0, 0, C.W, C.H, this.time);
       ctx.fillStyle = '#2a6a8a';
       ctx.fillRect(C.W / 2, 0, 1, C.H);
-      const S = 0.7;
-      const anchors = [{ x: 228, y: 190 }, { x: 412, y: 190 }];
+      const S = 0.6;
+      const anchors = [{ x: 240, y: 190 }, { x: 400, y: 190 }];
       for (let team = 0; team < 2; team++) {
         const dir = team === 0 ? 1 : -1;
         const fac = SL.FACTIONS[team];
-        SL.Sprites.draw(ctx, SL.SHIPS[team].sprite, team === 0 ? 36 : C.W - 36, 190, dir);
+        SL.Sprites.draw(ctx, SL.SHIPS[team].sprite, team === 0 ? 50 : C.W - 50, 190, dir);
         SL.ARMY.forEach((s) => {
           const type = SL.UNIT_TYPES[fac.prefix + '_' + s.role];
           const x = anchors[team].x + s.fx * dir * S;
