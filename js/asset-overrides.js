@@ -1,28 +1,44 @@
 'use strict';
-// 機体の絵を PNG 画像に差し替える設定。
-// 左にスプライト ID、右に画像のパス（index.html からの相対パス）を書く。
-// 画像は右向き・背景透過で用意する。左向きで描いた画像なら facing: 'left' をつける。
-// scale を省くと、仮の図形と同じ高さに自動で縮小される。scale: 1 なら画像の大きさのまま表示する。
+// 機体と戦艦の絵（PNG）の設定。
 //
-// 例:
-//   'az_grunt': 'assets/az_grunt.png',
-//   'cr_giant': { src: 'assets/cr_giant.png', scale: 0.5 },
-//   'cr_raider_jet': { src: 'assets/cr_raider_jet.png', facing: 'left' },
+// ■ 絵を差し替えるには
+//   assets フォルダの PNG を、同じファイル名の新しい画像で上書きするだけでよい。
+//   画像はどんな大きさでもよく、下の表の height（ドット）の高さに自動で縮小・拡大される。
+//   横に長すぎる画像は maxWidth を超えないように、さらに縮められる。
 //
-// スプライト ID:
-//   アズール連合  : az_commander, az_raider, az_raider_jet（変形後）, az_heavy, az_grunt, az_special,
-//                   az_artillery, az_giant, az_ship（戦艦）
-//   クリムゾン帝国: cr_commander, cr_raider, cr_raider_jet（変形後）, cr_heavy, cr_grunt, cr_special,
-//                   cr_artillery, cr_giant, cr_ship（戦艦）
+// ■ 画像の決まり
+//   ・右を向いた絵にする（左を向いている絵なら、その行に facing: 'left' を足す）
+//   ・背景は透明にする
+//   ・ファイル名や場所を変えたいときは src を書き換える（index.html からの相対パス）
 //
-// いま入っている画像は、このPCの ComfyUI（FLUX.1 schnell）で生成したオリジナルの絵を、
-// 背景を抜いてドット絵の大きさに縮小したもの（元の大きさのまま表示する）。
-SL.ASSET_OVERRIDES = (function () {
-  const ids = [
-    'az_commander', 'az_raider', 'az_raider_jet', 'az_heavy', 'az_grunt', 'az_special', 'az_artillery', 'az_giant', 'az_ship',
-    'cr_commander', 'cr_raider', 'cr_raider_jet', 'cr_heavy', 'cr_grunt', 'cr_special', 'cr_artillery', 'cr_giant', 'cr_ship',
-  ];
-  const map = {};
-  for (const id of ids) map[id] = { src: 'assets/' + id + '.png', scale: 1 };
-  return map;
-})();
+// ■ 大きさを変えたいとき
+//   height を変える。当たり判定は js/data.js の radius で決まるので、絵の大きさを変えても
+//   ゲームバランスは変わらない（ただし、見た目と当たり判定がずれる）。
+//
+// ■ 仮の図形に戻したいとき
+//   その行を消す（行頭に // を付けてもよい）。
+//
+// 例（左向きの絵を、高さ 32 ドットで出す）:
+//   az_grunt: { src: 'assets/my_grunt.png', height: 32, maxWidth: 40, facing: 'left' },
+SL.ASSET_OVERRIDES = {
+  // ---- アズール連合 ----
+  az_commander:  { src: 'assets/az_commander.png',  height: 30, maxWidth: 40 },  // 隊長機 VANGUARD
+  az_raider:     { src: 'assets/az_raider.png',     height: 27, maxWidth: 40 },  // 変形機 FALCON（戦闘モード）
+  az_raider_jet: { src: 'assets/az_raider_jet.png', height: 15, maxWidth: 40 },  // 変形機 FALCON（移動モード）
+  az_heavy:      { src: 'assets/az_heavy.png',      height: 30, maxWidth: 40 },  // 重装機 BASTION
+  az_grunt:      { src: 'assets/az_grunt.png',      height: 26, maxWidth: 36 },  // 量産機 GUARD
+  az_special:    { src: 'assets/az_special.png',    height: 28, maxWidth: 40 },  // 格闘機 GLAIVE
+  az_artillery:  { src: 'assets/az_artillery.png',  height: 23, maxWidth: 40 },  // 砲撃機 MORTAR
+  az_giant:      { src: 'assets/az_giant.png',      height: 46, maxWidth: 64 },  // 巨大機 CITADEL
+  az_ship:       { src: 'assets/az_ship.png',       height: 29, maxWidth: 96 },  // 戦艦 AURORA
+  // ---- クリムゾン帝国 ----
+  cr_commander:  { src: 'assets/cr_commander.png',  height: 30, maxWidth: 40 },  // 隊長機 TRIBUNE
+  cr_raider:     { src: 'assets/cr_raider.png',     height: 27, maxWidth: 40 },  // 変形機 WASP（戦闘モード）
+  cr_raider_jet: { src: 'assets/cr_raider_jet.png', height: 15, maxWidth: 40 },  // 変形機 WASP（移動モード）
+  cr_heavy:      { src: 'assets/cr_heavy.png',      height: 30, maxWidth: 40 },  // 重装機 JUGGERNAUT
+  cr_grunt:      { src: 'assets/cr_grunt.png',      height: 26, maxWidth: 36 },  // 量産機 LEGIONARY
+  cr_special:    { src: 'assets/cr_special.png',    height: 28, maxWidth: 40 },  // 格闘機 STINGER
+  cr_artillery:  { src: 'assets/cr_artillery.png',  height: 25, maxWidth: 40 },  // 砲撃機 HOWITZER
+  cr_giant:      { src: 'assets/cr_giant.png',      height: 44, maxWidth: 64 },  // 巨大機 LEVIATHAN
+  cr_ship:       { src: 'assets/cr_ship.png',       height: 40, maxWidth: 96 },  // 戦艦 BEHEMOTH
+};

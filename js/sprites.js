@@ -287,12 +287,16 @@ SL.Sprites = (function () {
   }
 
   // 差し替え画像を読み込む。失敗したものは仮の図形のまま。
-  //  spec: "assets/xxx.png" または { src, scale, facing: 'left' }
+  //  spec: "assets/xxx.png" または { src, height, maxWidth, scale, facing: 'left' }
+  //   height  : 画面に出す高さ（ドット）。画像がどんな大きさでも、この高さに縮小・拡大する
+  //   maxWidth: 横に長い画像がこの幅を超えないように、さらに縮める
+  //   scale   : 倍率を直接決める（height より優先）
+  //   どれも無ければ、コードで描いた仮の図形と同じ高さにする
   function install(id, img, spec) {
     const opts = typeof spec === 'object' && spec ? spec : {};
     const base = store[id];
-    const targetH = base ? base.h : 20;
-    const scale = opts.scale || targetH / img.naturalHeight;
+    let scale = opts.scale || (opts.height || (base ? base.h : 20)) / img.naturalHeight;
+    if (!opts.scale && opts.maxWidth && img.naturalWidth * scale > opts.maxWidth) scale = opts.maxWidth / img.naturalWidth;
     const w = Math.max(1, Math.round(img.naturalWidth * scale));
     const h = Math.max(1, Math.round(img.naturalHeight * scale));
     const c = makeCanvas(w, h);
