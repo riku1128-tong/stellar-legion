@@ -70,11 +70,11 @@ SL.UNIT_TYPES = {
     weapons: ['cannon', 'beam_rifle', null],
   },
   cr_giant: {
-    name: 'ZEONG', faction: 'cr', role: 'giant', size: 'L', hp: 980, speed: 52, energy: 160, radius: 22, sprite: 'cr_giant',
+    name: 'ZEONG', faction: 'cr', role: 'giant', size: 'M', hp: 980, speed: 52, energy: 160, radius: 22, sprite: 'cr_giant',
     weapons: ['mega_cannon', 'homing', null],
   },
   cr_unit_2: {
-    name: 'HELMES', faction: 'cr', role: 'giant', size: 'L', hp: 1005, speed: 60, energy: 160, radius: 22, sprite: 'cr_HELMES',
+    name: 'HELMES', faction: 'cr', role: 'giant', size: 'M', hp: 1005, speed: 60, energy: 160, radius: 22, sprite: 'cr_HELMES',
     weapons: ['mega_cannon', 'spread_beam', null],
   },
 };
