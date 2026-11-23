@@ -42,4 +42,11 @@ SL.ASSET_OVERRIDES = {
   cr_giant:      { src: 'assets/cr_giant.png', height: 44, maxWidth: 64 },  // 巨大機 LEVIATHAN
   cr_ship:       { src: 'assets/cr_ship.png', height: 40, maxWidth: 96 },  // 戦艦 BEHEMOTH
   cr_HELMES: { src: 'assets/cr_HELMES.png', height: 40, maxWidth: 96 },  // 設定ページで取り込んだ絵
+  az_BALL: { src: 'assets/az_BALL.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_AGGAI: { src: 'assets/cr_AGGAI.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_GELGOOG: { src: 'assets/cr_GELGOOG.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_GOGG: { src: 'assets/cr_GOGG.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_ZGOCK: { src: 'assets/cr_ZGOCK.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_SHA_ZAKUII: { src: 'assets/cr_SHA_ZAKUII.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
+  cr_SHA_ZGOCK: { src: 'assets/cr_SHA_ZGOCK.png', height: 46, maxWidth: 64 },  // 設定ページで取り込んだ絵
 };

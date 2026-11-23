@@ -16,12 +16,16 @@
 SL.UNIT_TYPES = {
   // --- アズール連合 ---
   az_commander: {
-    name: 'RX-78-2', faction: 'az', role: 'commander', size: 'S', hp: 380, speed: 120, radius: 9, sprite: 'az_commander',
+    name: 'RX-78-2', faction: 'az', role: 'commander', size: 'S', hp: 580, speed: 140, energy: 150, radius: 9, sprite: 'az_commander',
     weapons: ['beam_rifle', 'homing', 'saber'],
   },
   az_raider: {
     name: 'CORE-FIGHTER', faction: 'az', role: 'raider', size: 'S', hp: 260, speed: 115, radius: 8, sprite: 'az_raider',
     weapons: ['beam_rifle', 'missile3', 'saber'],
+  },
+  az_raider_2: {
+    name: 'BALL', faction: 'az', role: 'raider', size: 'S', hp: 160, speed: 115, energy: 80, radius: 8, sprite: 'az_BALL',
+    weapons: ['beam_rifle', null, null],
   },
   az_heavy: {
     name: 'GUN-CANON', faction: 'az', role: 'heavy', size: 'S', hp: 460, speed: 85, radius: 10, sprite: 'az_heavy',
@@ -45,8 +49,20 @@ SL.UNIT_TYPES = {
   },
   // --- クリムゾン帝国 ---
   cr_commander: {
-    name: 'SHA', faction: 'cr', role: 'commander', size: 'S', hp: 360, speed: 250, radius: 9, sprite: 'cr_commander',
+    name: 'SHA-GELGOOG', faction: 'cr', role: 'commander', size: 'S', hp: 360, speed: 250, radius: 9, sprite: 'cr_commander',
     weapons: ['beam_rifle', 'missile3', 'naginata'],
+  },
+  cr_commander_3: {
+    name: 'SHA-ZAKU-II', faction: 'cr', role: 'commander', size: 'S', hp: 300, speed: 300, energy: 150, radius: 9, sprite: 'cr_SHA_ZAKUII',
+    weapons: ['beam_rifle', 'missile3', 'heat_axe'],
+  },
+  cr_commander_2: {
+    name: 'SHA-ZGOK', faction: 'cr', role: 'commander', size: 'S', hp: 460, speed: 200, radius: 9, sprite: 'cr_SHA_ZGOCK',
+    weapons: ['beam_rifle', 'missile3', 'heat_axe'],
+  },
+  cr_commander_4: {
+    name: 'ZGOK', faction: 'cr', role: 'grunt', size: 'S', hp: 310, speed: 90, radius: 9, sprite: 'cr_ZGOCK',
+    weapons: ['beam_rifle', 'missile3', 'heat_axe'],
   },
   cr_raider: {
     name: 'NO ENTRY', faction: 'cr', role: 'raider', size: 'S', hp: 250, speed: 118, radius: 8, sprite: 'cr_raider',
@@ -57,9 +73,17 @@ SL.UNIT_TYPES = {
     name: 'GYAN', faction: 'cr', role: 'heavy', size: 'S', hp: 480, speed: 80, radius: 10, sprite: 'cr_heavy',
     weapons: ['bazooka', 'missile5', 'heat_axe'],
   },
+  cr_heavy_2: {
+    name: 'GYAN II', faction: 'cr', role: 'heavy', size: 'S', hp: 480, speed: 80, radius: 10, sprite: 'cr_AGGAI',
+    weapons: ['bazooka', 'missile5', 'heat_axe'],
+  },
   cr_grunt: {
     name: 'ZAKU-II', faction: 'cr', role: 'grunt', size: 'S', hp: 205, speed: 100, radius: 8, sprite: 'cr_grunt',
     weapons: ['rifle', null, 'heat_axe'],
+  },
+  cr_grunt_2: {
+    name: 'GELGOOG', faction: 'cr', role: 'special', size: 'S', hp: 245, speed: 120, energy: 120, radius: 8, sprite: 'cr_GELGOOG',
+    weapons: ['rifle', 'vulcan', 'naginata'],
   },
   cr_special: {
     name: 'GUFU', faction: 'cr', role: 'special', size: 'S', hp: 230, speed: 110, radius: 8, sprite: 'cr_special',
@@ -67,7 +91,11 @@ SL.UNIT_TYPES = {
   },
   cr_artillery: {
     name: 'DOM', faction: 'cr', role: 'artillery', size: 'S', hp: 270, speed: 72, radius: 10, sprite: 'cr_artillery',
-    weapons: ['cannon', 'beam_rifle', null],
+    weapons: ['cannon', 'beam_rifle', 'heat_axe'],
+  },
+  cr_artillery_2: {
+    name: 'GOGG', faction: 'cr', role: 'artillery', size: 'S', hp: 270, speed: 72, radius: 10, sprite: 'cr_GOGG',
+    weapons: ['beam_rifle', 'spread_beam', null],
   },
   cr_giant: {
     name: 'ZEONG', faction: 'cr', role: 'giant', size: 'M', hp: 980, speed: 52, energy: 160, radius: 22, sprite: 'cr_giant',
