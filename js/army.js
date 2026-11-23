@@ -5,8 +5,8 @@
 // 設定ページ（アーティファクト「STELLAR LEGION 兵器と出撃」）で値を変えて、この中身をまるごと貼り替えてもよい。
 SL.ARMY_COUNTS = {
   az: {
-    az_commander: 1,  // VANGUARD 隊長機
-    az_raider: 2,  // FALCON 遊撃機
+    az_commander: 1,  // RX78-2 隊長機
+    az_raider: 2,  // CORE-FIGHTER 遊撃機
     az_heavy: 1,  // BASTION 重装機
     az_grunt: 7,  // GUARD 量産機
     az_special: 2,  // GLAIVE 格闘機
@@ -21,5 +21,6 @@ SL.ARMY_COUNTS = {
     cr_special: 2,  // STINGER 格闘機
     cr_artillery: 2,  // HOWITZER 砲撃機
     cr_giant: 1,  // LEVIATHAN 巨大機
+    cr_unit_2: 1,  // HELMES 巨大機
   },
 };

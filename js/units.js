@@ -16,12 +16,11 @@
 SL.UNIT_TYPES = {
   // --- アズール連合 ---
   az_commander: {
-    name: 'VANGUARD', faction: 'az', role: 'commander', size: 'S', hp: 380, speed: 120, radius: 9, sprite: 'az_commander',
+    name: 'RX78-2', faction: 'az', role: 'commander', size: 'S', hp: 380, speed: 120, radius: 9, sprite: 'az_commander',
     weapons: ['beam_rifle', 'homing', 'saber'],
   },
   az_raider: {
-    name: 'FALCON', faction: 'az', role: 'raider', size: 'S', hp: 260, speed: 115, radius: 8, sprite: 'az_raider',
-    transform: { speed: 1.7, turn: 0.7, sprite: 'az_raider_jet' },
+    name: 'CORE-FIGHTER', faction: 'az', role: 'raider', size: 'S', hp: 260, speed: 115, radius: 8, sprite: 'az_raider',
     weapons: ['beam_rifle', 'missile3', 'saber'],
   },
   az_heavy: {
@@ -71,7 +70,11 @@ SL.UNIT_TYPES = {
     weapons: ['cannon', 'beam_rifle', null],
   },
   cr_giant: {
-    name: 'LEVIATHAN', faction: 'cr', role: 'giant', size: 'S', hp: 980, speed: 52, energy: 160, radius: 22, sprite: 'cr_giant',
-    weapons: ['spread_beam', 'homing', null],
+    name: 'LEVIATHAN', faction: 'cr', role: 'giant', size: 'L', hp: 980, speed: 52, energy: 160, radius: 22, sprite: 'cr_giant',
+    weapons: ['mega_cannon', 'homing', null],
+  },
+  cr_unit_2: {
+    name: 'HELMES', faction: 'cr', role: 'giant', size: 'L', hp: 205, speed: 100, radius: 8, sprite: 'cr_grunt',
+    weapons: ['mega_cannon', 'spread_beam', null],
   },
 };

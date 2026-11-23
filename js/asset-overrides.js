@@ -22,7 +22,7 @@
 //   az_grunt: { src: 'assets/my_grunt.png', height: 32, maxWidth: 40, facing: 'left' },
 SL.ASSET_OVERRIDES = {
   // ---- アズール連合 ----
-  az_commander:  { src: 'assets/az_commander.png',  height: 30, maxWidth: 40 },  // 隊長機 VANGUARD
+  az_commander:  { src: 'assets/az_commander.png', height: 30, maxWidth: 40 },  // 隊長機 VANGUARD
   az_raider:     { src: 'assets/az_raider.png',     height: 27, maxWidth: 40 },  // 変形機 FALCON（戦闘モード）
   az_raider_jet: { src: 'assets/az_raider_jet.png', height: 15, maxWidth: 40 },  // 変形機 FALCON（移動モード）
   az_heavy:      { src: 'assets/az_heavy.png',      height: 30, maxWidth: 40 },  // 重装機 BASTION
