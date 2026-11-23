@@ -40,7 +40,7 @@ SL.UNIT_TYPES = {
     weapons: ['cannon', 'beam_rifle', null],
   },
   az_giant: {
-    name: 'WHITE-BASE', faction: 'az', role: 'giant', size: 'S', hp: 1000, speed: 50, energy: 160, radius: 22, sprite: 'az_giant',
+    name: 'NO ENTRY', faction: 'az', role: 'giant', size: 'S', hp: 1000, speed: 50, energy: 160, radius: 22, sprite: 'az_giant',
     weapons: ['spread_beam', 'missile5', null],
   },
   // --- クリムゾン帝国 ---

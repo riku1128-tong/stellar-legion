@@ -11,11 +11,11 @@ SL.ARMY_COUNTS = {
     az_grunt: 8,  // GIM 量産機
     az_special: 0,  // NO ENTRY 格闘機
     az_artillery: 2,  // GUN-TANK 砲撃機
-    az_giant: 1,  // WHITE-BASE 巨大機
+    az_giant: 0,  // NO ENTRY 巨大機
   },
   cr: {
     cr_commander: 1,  // SHA 隊長機
-    cr_raider: 2,  // NO ENTRY 遊撃機
+    cr_raider: 0,  // NO ENTRY 遊撃機
     cr_heavy: 1,  // GYAN 重装機
     cr_grunt: 7,  // ZAKU-II 量産機
     cr_special: 2,  // GUFU 格闘機
